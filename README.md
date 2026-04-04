@@ -1,14 +1,23 @@
 # restaurant-web
 
-Frontend for a restaurant reservation system built with React and TypeScript.
+Client-facing SPA for a restaurant reservation system. Browse menus, book tables, pay deposits via Stripe, pre-order meals and manage reservations.
 
 ## Stack
 
 - React 19
 - TypeScript
-- Axios
+- Vite
+- React Router
+- Stripe.js
 
-## Description
+## Setup
 
-Client-facing web application for browsing table availability, making
-reservations, pre-ordering from the menu and managing bookings.
+```bash
+cp .env.example .env   # set your VITE_API_URL and VITE_STRIPE_PUBLIC_KEY
+npm install
+npm run dev            # http://localhost:5173
+```
+
+## API
+
+Consumes the REST API at `http://localhost:8000/api` (see [restaurant-api](https://github.com/anthonny0803/restaurant-api)).

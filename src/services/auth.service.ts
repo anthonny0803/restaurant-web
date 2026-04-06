@@ -45,20 +45,20 @@ export function login(body: LoginBody) {
 }
 
 export function logout() {
-  return apiFetch<ApiResponse<MessageResponse>>("/auth/logout", {
+  return apiFetch<MessageResponse>("/auth/logout", {
     method: "POST",
   });
 }
 
 export function forgotPassword(email: string) {
-  return apiFetch<ApiResponse<MessageResponse>>("/auth/forgot-password", {
+  return apiFetch<MessageResponse>("/auth/forgot-password", {
     method: "POST",
     body: { email },
   });
 }
 
 export function resetPassword(body: ResetPasswordBody) {
-  return apiFetch<ApiResponse<MessageResponse>>("/auth/reset-password", {
+  return apiFetch<MessageResponse>("/auth/reset-password", {
     method: "POST",
     body,
   });

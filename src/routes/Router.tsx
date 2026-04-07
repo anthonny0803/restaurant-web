@@ -1,7 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "../context/AuthContext";
 import Layout from "../components/Layout";
+import GuestRoute from "./GuestRoute";
 import ProtectedRoute from "./ProtectedRoute";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/ResetPasswordPage";
 
 // Placeholder components until real pages are built
 function Placeholder({ name }: { name: string }) {
@@ -16,19 +21,18 @@ export default function Router() {
           <Route element={<Layout />}>
             {/* Public routes */}
             <Route path="/" element={<Placeholder name="Home" />} />
-            <Route path="/login" element={<Placeholder name="Login" />} />
-            <Route
-              path="/register"
-              element={<Placeholder name="Register" />}
-            />
-            <Route
-              path="/forgot-password"
-              element={<Placeholder name="Forgot Password" />}
-            />
-            <Route
-              path="/reset-password"
-              element={<Placeholder name="Reset Password" />}
-            />
+            <Route element={<GuestRoute />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route
+                path="/forgot-password"
+                element={<ForgotPasswordPage />}
+              />
+              <Route
+                path="/reset-password"
+                element={<ResetPasswordPage />}
+              />
+            </Route>
             <Route path="/menu" element={<Placeholder name="Menu" />} />
             <Route
               path="/reservations/new"

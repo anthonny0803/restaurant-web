@@ -3,10 +3,12 @@ import { AuthProvider } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import GuestRoute from "./GuestRoute";
 import ProtectedRoute from "./ProtectedRoute";
+import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
+import MenuPage from "../pages/MenuPage";
 
 // Placeholder components until real pages are built
 function Placeholder({ name }: { name: string }) {
@@ -20,7 +22,7 @@ export default function Router() {
         <Routes>
           <Route element={<Layout />}>
             {/* Public routes */}
-            <Route path="/" element={<Placeholder name="Home" />} />
+            <Route path="/" element={<HomePage />} />
             <Route element={<GuestRoute />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -33,7 +35,7 @@ export default function Router() {
                 element={<ResetPasswordPage />}
               />
             </Route>
-            <Route path="/menu" element={<Placeholder name="Menu" />} />
+            <Route path="/menu" element={<MenuPage />} />
             <Route
               path="/reservations/new"
               element={<Placeholder name="New Reservation" />}

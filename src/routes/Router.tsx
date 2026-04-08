@@ -10,6 +10,7 @@ import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 import MenuPage from "../pages/MenuPage";
 import NewReservationPage from "../pages/NewReservationPage";
+import PaymentPage from "../pages/PaymentPage";
 
 // Placeholder components until real pages are built
 function Placeholder({ name }: { name: string }) {
@@ -41,10 +42,7 @@ export default function Router() {
               path="/reservations/new"
               element={<NewReservationPage />}
             />
-            <Route
-              path="/payment"
-              element={<Placeholder name="Payment" />}
-            />
+            <Route path="/payment" element={<PaymentPage />} />
             <Route
               path="/complete-account"
               element={<Placeholder name="Complete Account" />}

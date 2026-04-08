@@ -5,7 +5,7 @@ import FormField from "../components/FormField";
 import SubmitButton from "../components/SubmitButton";
 import { useAuth } from "../context/AuthContext";
 import { handleApiError } from "../lib/form-errors";
-import type { Table } from "../types/api";
+import type { Reservation, Table } from "../types/api";
 import * as reservationService from "../services/reservation.service";
 import * as guestService from "../services/guest.service";
 
@@ -95,9 +95,9 @@ export default function NewReservationPage() {
 
   const navigateToPayment = (
     clientSecret: string,
-    reservationId: number,
+    reservation: Reservation,
   ) => {
-    navigate("/payment", { state: { clientSecret, reservationId } });
+    navigate("/payment", { state: { clientSecret, reservation } });
   };
 
   const createRegisteredHold = async () => {
@@ -114,7 +114,7 @@ export default function NewReservationPage() {
       });
       navigateToPayment(
         response.data.payment_intent_client_secret,
-        response.data.reservation.id,
+        response.data.reservation,
       );
     } catch (err: unknown) {
       const message =
@@ -140,7 +140,7 @@ export default function NewReservationPage() {
       });
       navigateToPayment(
         response.data.payment_intent_client_secret,
-        response.data.reservation.id,
+        response.data.reservation,
       );
     } catch (err) {
       handleApiError<GuestForm>(err, setGuestError, GUEST_FIELDS);

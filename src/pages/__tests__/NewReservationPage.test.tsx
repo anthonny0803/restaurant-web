@@ -59,10 +59,30 @@ function mockAvailableTables(tables: Table[] = MOCK_TABLES) {
   });
 }
 
+const MOCK_HOLD_RESERVATION = {
+  id: 10,
+  user_id: 1,
+  table: MOCK_TABLES[0],
+  seats_requested: 4,
+  date: "2026-04-10",
+  start_time: "19:00",
+  end_time: "21:00",
+  status: "pending" as const,
+  expires_at: "2026-04-10T19:15:00Z",
+  payment: { amount: "40.00", status: "pending", paid_at: "" },
+  created_at: "2026-04-08T10:00:00Z",
+};
+
+const MOCK_GUEST_RESERVATION = {
+  ...MOCK_HOLD_RESERVATION,
+  id: 11,
+  user_id: 2,
+};
+
 function mockCreateHold() {
   vi.mocked(reservationService.createHold).mockResolvedValue({
     data: {
-      reservation: { id: 10 } as never,
+      reservation: MOCK_HOLD_RESERVATION,
       payment_intent_client_secret: "pi_secret_123",
     },
   });
@@ -71,7 +91,7 @@ function mockCreateHold() {
 function mockCreateGuestReservation() {
   vi.mocked(guestService.createGuestReservation).mockResolvedValue({
     data: {
-      reservation: { id: 11 } as never,
+      reservation: MOCK_GUEST_RESERVATION,
       payment_intent_client_secret: "pi_secret_456",
     },
   });
@@ -265,7 +285,10 @@ describe("NewReservationPage", () => {
       await waitFor(() => {
         expect(reservationService.createHold).toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith("/payment", {
-          state: { clientSecret: "pi_secret_123", reservationId: 10 },
+          state: {
+            clientSecret: "pi_secret_123",
+            reservation: expect.objectContaining({ id: 10 }),
+          },
         });
       });
     });
@@ -335,7 +358,10 @@ describe("NewReservationPage", () => {
       await waitFor(() => {
         expect(guestService.createGuestReservation).toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith("/payment", {
-          state: { clientSecret: "pi_secret_456", reservationId: 11 },
+          state: {
+            clientSecret: "pi_secret_456",
+            reservation: expect.objectContaining({ id: 11 }),
+          },
         });
       });
     });

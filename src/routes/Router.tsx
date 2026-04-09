@@ -11,6 +11,7 @@ import ResetPasswordPage from "../pages/ResetPasswordPage";
 import MenuPage from "../pages/MenuPage";
 import NewReservationPage from "../pages/NewReservationPage";
 import PaymentPage from "../pages/PaymentPage";
+import MyReservationsPage from "../pages/MyReservationsPage";
 
 // Placeholder components until real pages are built
 function Placeholder({ name }: { name: string }) {
@@ -52,7 +53,7 @@ export default function Router() {
             <Route element={<ProtectedRoute />}>
               <Route
                 path="/my-reservations"
-                element={<Placeholder name="My Reservations" />}
+                element={<MyReservationsPage />}
               />
               <Route
                 path="/my-reservations/:id/pre-order"

@@ -13,11 +13,7 @@ import NewReservationPage from "../pages/NewReservationPage";
 import PaymentPage from "../pages/PaymentPage";
 import MyReservationsPage from "../pages/MyReservationsPage";
 import PreOrderPage from "../pages/PreOrderPage";
-
-// Placeholder components until real pages are built
-function Placeholder({ name }: { name: string }) {
-  return <h1>{name}</h1>;
-}
+import CompleteAccountPage from "../pages/CompleteAccountPage";
 
 export default function Router() {
   return (
@@ -47,7 +43,7 @@ export default function Router() {
             <Route path="/payment" element={<PaymentPage />} />
             <Route
               path="/complete-account"
-              element={<Placeholder name="Complete Account" />}
+              element={<CompleteAccountPage />}
             />
 
             {/* Protected routes */}

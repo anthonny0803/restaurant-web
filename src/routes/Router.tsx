@@ -12,6 +12,7 @@ import MenuPage from "../pages/MenuPage";
 import NewReservationPage from "../pages/NewReservationPage";
 import PaymentPage from "../pages/PaymentPage";
 import MyReservationsPage from "../pages/MyReservationsPage";
+import PreOrderPage from "../pages/PreOrderPage";
 
 // Placeholder components until real pages are built
 function Placeholder({ name }: { name: string }) {
@@ -57,7 +58,7 @@ export default function Router() {
               />
               <Route
                 path="/my-reservations/:id/pre-order"
-                element={<Placeholder name="Pre-order" />}
+                element={<PreOrderPage />}
               />
             </Route>
           </Route>

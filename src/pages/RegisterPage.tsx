@@ -90,11 +90,11 @@ export default function RegisterPage() {
         />
       </form>
 
-      <p className="mt-4 text-center text-sm text-gray-600">
+      <p className="mt-4 text-center text-sm text-zinc-500">
         Ya tienes cuenta?{" "}
         <Link
           to="/login"
-          className="font-medium text-indigo-600 hover:text-indigo-700"
+          className="font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
         >
           Inicia sesion
         </Link>

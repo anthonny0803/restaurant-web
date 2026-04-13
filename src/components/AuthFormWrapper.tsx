@@ -12,14 +12,14 @@ export default function AuthFormWrapper({
   children,
 }: AuthFormWrapperProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
+    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-6">
+      <div className="w-full max-w-md rounded-sm border border-zinc-700 bg-zinc-800 p-10 shadow-lg animate-fade-in-up">
+        <h1 className="mb-8 text-center font-serif text-2xl font-medium text-white">
           {title}
         </h1>
 
         {error && (
-          <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600">
+          <p className="mb-6 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
             {error}
           </p>
         )}

@@ -138,22 +138,22 @@ export default function PreOrderPage() {
 
   if (isPageLoading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <p className="text-center text-gray-600">Cargando...</p>
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <p className="text-center text-zinc-500">Cargando...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <p className="rounded-md bg-red-50 p-4 text-center text-red-600">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <p className="rounded-sm bg-red-900/30 p-4 text-center text-red-400">
           {error}
         </p>
         <div className="mt-4 text-center">
           <Link
             to="/my-reservations"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            className="text-sm font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
           >
             Volver a mis reservaciones
           </Link>
@@ -165,41 +165,43 @@ export default function PreOrderPage() {
   if (!reservation) return null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-6 py-12 animate-fade-in-up">
       <Link
         to="/my-reservations"
-        className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+        className="text-sm font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
       >
         &larr; Volver a mis reservaciones
       </Link>
 
-      <h1 className="mt-4 text-2xl font-bold text-gray-900">Pre-orden</h1>
+      <h1 className="mt-4 font-serif text-4xl font-medium text-white">
+        Pre-orden
+      </h1>
 
-      <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+      <div className="mt-6 rounded-sm border border-zinc-800 bg-zinc-800 p-6 shadow-lg">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
           <div>
-            <span className="text-gray-500">Fecha</span>
-            <p className="font-medium text-gray-900">
+            <span className="text-zinc-500">Fecha</span>
+            <p className="font-medium text-white">
               {formatDate(reservation.date)}
             </p>
           </div>
           <div>
-            <span className="text-gray-500">Horario</span>
-            <p className="font-medium text-gray-900">
+            <span className="text-zinc-500">Horario</span>
+            <p className="font-medium text-white">
               {formatTime(reservation.start_time)} -{" "}
               {formatTime(reservation.end_time)}
             </p>
           </div>
           <div>
-            <span className="text-gray-500">Personas</span>
-            <p className="font-medium text-gray-900">
+            <span className="text-zinc-500">Personas</span>
+            <p className="font-medium text-white">
               {reservation.seats_requested}
             </p>
           </div>
           {reservation.table && (
             <div>
-              <span className="text-gray-500">Mesa</span>
-              <p className="font-medium text-gray-900">
+              <span className="text-zinc-500">Mesa</span>
+              <p className="font-medium text-white">
                 {reservation.table.name}
               </p>
             </div>
@@ -208,12 +210,12 @@ export default function PreOrderPage() {
       </div>
 
       {orderError && (
-        <div className="mt-4 flex items-center justify-between rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-600">{orderError}</p>
+        <div className="mt-6 flex items-center justify-between rounded-sm bg-red-900/30 p-4">
+          <p className="text-sm text-red-400">{orderError}</p>
           <button
             type="button"
             onClick={() => setOrderError("")}
-            className="text-sm font-medium text-red-600 hover:text-red-800"
+            className="text-sm font-medium text-red-400 hover:text-red-300"
           >
             Cerrar
           </button>

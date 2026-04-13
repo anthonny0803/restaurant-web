@@ -2,32 +2,51 @@ import { Link } from "react-router-dom";
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-2xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-          Bienvenido a nuestro restaurante
-        </h1>
-        <p className="mt-4 text-lg text-gray-600">
-          Reserva tu mesa, explora nuestro menu y disfruta de una experiencia
-          gastronomica unica.
+    <div className="relative flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-zinc-800 to-stone-900" />
+
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div className="relative max-w-2xl px-6 text-center animate-fade-in-up">
+        <div className="mx-auto h-px w-16 bg-amber-500" />
+
+        <p className="mt-6 text-xs font-medium tracking-[0.4em] text-amber-500 uppercase">
+          Experiencia gastronomica
         </p>
 
-        <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <h1 className="mt-6 font-serif text-5xl font-medium leading-tight text-white sm:text-6xl">
+          Donde cada detalle importa
+        </h1>
+
+        <p className="mt-6 text-lg leading-relaxed text-zinc-400">
+          Reserva tu mesa, explora nuestro menu y disfruta de una velada
+          inolvidable en un ambiente pensado para ti.
+        </p>
+
+        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Link
             to="/reservations/new"
-            className="rounded-md bg-indigo-600 px-6 py-3 text-sm font-medium text-white
-              transition-colors hover:bg-indigo-700"
+            className="rounded-sm bg-amber-500 px-8 py-3 text-sm font-medium tracking-wide text-zinc-900
+              transition-colors duration-200 hover:bg-amber-400"
           >
             Reservar mesa
           </Link>
           <Link
             to="/menu"
-            className="rounded-md border border-gray-300 bg-white px-6 py-3 text-sm
-              font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="rounded-sm border border-zinc-600 px-8 py-3 text-sm font-medium tracking-wide
+              text-zinc-300 transition-colors duration-200 hover:border-white hover:text-white"
           >
             Ver menu
           </Link>
         </div>
+
+        <div className="mx-auto mt-10 h-px w-16 bg-amber-500" />
       </div>
     </div>
   );

@@ -60,15 +60,15 @@ export default function LoginPage() {
         />
       </form>
 
-      <div className="mt-4 flex flex-col items-center gap-2 text-sm text-gray-600">
-        <Link to="/forgot-password" className="hover:text-indigo-600">
+      <div className="mt-4 flex flex-col items-center gap-2 text-sm text-zinc-500">
+        <Link to="/forgot-password" className="transition-colors duration-200 hover:text-amber-500">
           Olvidaste tu contrasena?
         </Link>
         <p>
           No tienes cuenta?{" "}
           <Link
             to="/register"
-            className="font-medium text-indigo-600 hover:text-indigo-700"
+            className="font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
           >
             Registrate
           </Link>

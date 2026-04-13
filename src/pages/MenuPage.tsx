@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { MenuItemSkeleton } from "../components/Skeleton";
+import { useToast } from "../context/ToastContext";
 import type { MenuCategory, MenuItem } from "../types/api";
 import * as menuService from "../services/menu.service";
 
@@ -9,6 +11,8 @@ const CATEGORIES: { value: MenuCategory; label: string }[] = [
   { value: "bebidas", label: "Bebidas" },
 ];
 
+const FEATURED_COUNT = 2;
+
 export default function MenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(
@@ -16,6 +20,7 @@ export default function MenuPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const toast = useToast();
 
   useEffect(() => {
     setIsLoading(true);
@@ -29,6 +34,7 @@ export default function MenuPage() {
         const message =
           err instanceof Error ? err.message : "Error al cargar el menu";
         setError(message);
+        toast.error(message);
       })
       .finally(() => setIsLoading(false));
   }, [activeCategory]);
@@ -42,77 +48,132 @@ export default function MenuPage() {
         return acc;
       }, {});
 
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900">Nuestro menu</h1>
+  const isFeatured = !activeCategory;
 
-      <div className="mt-6 flex flex-wrap gap-2">
+  function renderMenuItem(item: MenuItem) {
+    return (
+      <div key={item.id} className="group py-3.5">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="font-medium text-zinc-200 transition-colors duration-200 group-hover:text-amber-500">
+            {item.name}
+          </h3>
+          <span className="min-w-8 flex-1 border-b border-dotted border-zinc-700" />
+          <span className="shrink-0 font-medium text-amber-500">
+            ${item.price}
+          </span>
+        </div>
+        {item.description && (
+          <p className="mt-1 text-sm leading-relaxed text-zinc-500 italic">
+            {item.description}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl px-6 py-16 animate-fade-in-up">
+      <div className="text-center">
+        <p className="text-xs font-medium tracking-[0.3em] text-amber-500 uppercase">
+          Seleccion del chef
+        </p>
+        <h1 className="mt-3 font-serif text-5xl font-medium text-white">
+          Nuestro Menu
+        </h1>
+        <div className="mx-auto mt-4 h-px w-16 bg-amber-500" />
+      </div>
+
+      <div className="mt-10 flex flex-wrap justify-center gap-2">
         <button
           type="button"
           onClick={() => setActiveCategory(null)}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
+          className={`cursor-pointer rounded-sm px-4 py-2 text-sm tracking-wide transition-colors duration-200
             ${!activeCategory
-              ? "bg-indigo-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              ? "bg-amber-500 text-zinc-900"
+              : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}
         >
-          Todos
+          Destacados
         </button>
         {CATEGORIES.map((cat) => (
           <button
             key={cat.value}
             type="button"
             onClick={() => setActiveCategory(cat.value)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
+            className={`cursor-pointer rounded-sm px-4 py-2 text-sm tracking-wide transition-colors duration-200
               ${activeCategory === cat.value
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                ? "bg-amber-500 text-zinc-900"
+                : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}
           >
             {cat.label}
           </button>
         ))}
       </div>
 
-      {isLoading && <p className="mt-8 text-gray-500">Cargando menu...</p>}
+      {isLoading && (
+        <div className="mt-12 border border-zinc-800 bg-zinc-800 px-8 py-10 shadow-lg animate-fade-in sm:px-14 sm:py-14">
+          {CATEGORIES.map((cat) => (
+            <div key={cat.value} className="mb-8 last:mb-0">
+              <div className="flex items-center gap-4">
+                <div className="h-px flex-1 bg-zinc-700" />
+                <div className="h-4 w-24 rounded-sm bg-zinc-700 animate-pulse-soft" />
+                <div className="h-px flex-1 bg-zinc-700" />
+              </div>
+              <div className="mt-5">
+                <MenuItemSkeleton />
+                <MenuItemSkeleton />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {error && <p className="mt-8 text-red-600">{error}</p>}
+      {!isLoading && error && <p className="mt-12 text-center text-zinc-500">No se pudo cargar el menu.</p>}
 
       {!isLoading && !error && items.length === 0 && (
-        <p className="mt-8 text-gray-500">No hay items disponibles.</p>
+        <p className="mt-12 text-center text-zinc-500">No hay items disponibles.</p>
       )}
 
       {!isLoading && !error && items.length > 0 && (
-        <div className="mt-8 space-y-10">
-          {CATEGORIES.filter((cat) => groupedItems[cat.value]).map((cat) => (
-            <section key={cat.value}>
-              <h2 className="text-xl font-semibold text-gray-800">
-                {cat.label}
-              </h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {groupedItems[cat.value].map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-lg border border-gray-200 bg-white p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {item.name}
-                        </h3>
-                        {item.description && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      <span className="shrink-0 font-semibold text-indigo-600">
-                        ${item.price}
-                      </span>
-                    </div>
+        <div className="mt-12 border border-zinc-800 bg-zinc-800 px-8 py-10 shadow-lg animate-fade-in-up sm:px-14 sm:py-14">
+          <div className="space-y-12">
+            {CATEGORIES.filter((cat) => groupedItems[cat.value]).map((cat) => {
+              const categoryItems = groupedItems[cat.value];
+              const visibleItems = isFeatured
+                ? categoryItems.slice(0, FEATURED_COUNT)
+                : categoryItems;
+              const hasMore = isFeatured && categoryItems.length > FEATURED_COUNT;
+
+              return (
+                <section key={cat.value}>
+                  <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-zinc-700" />
+                    <h2 className="font-serif text-lg font-medium tracking-wide text-zinc-300">
+                      {cat.label}
+                    </h2>
+                    <div className="h-px flex-1 bg-zinc-700" />
                   </div>
-                ))}
-              </div>
-            </section>
-          ))}
+
+                  <div className="mt-5 space-y-1">
+                    {visibleItems.map(renderMenuItem)}
+                  </div>
+
+                  {hasMore && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveCategory(cat.value)}
+                      className="mt-3 cursor-pointer text-sm font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
+                    >
+                      Ver {cat.label.toLowerCase()} completo &rarr;
+                    </button>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 flex justify-center">
+            <div className="h-px w-16 bg-amber-500" />
+          </div>
         </div>
       )}
     </div>

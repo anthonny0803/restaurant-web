@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CancelModal from "../components/CancelModal";
+import { ReservationCardSkeleton } from "../components/Skeleton";
+import { useToast } from "../context/ToastContext";
 import * as reservationService from "../services/reservation.service";
 import type { Reservation, ReservationStatus } from "../types/api";
 
@@ -8,11 +10,11 @@ const STATUS_CONFIG: Record<
   ReservationStatus,
   { label: string; colors: string }
 > = {
-  pending: { label: "Pendiente", colors: "bg-yellow-100 text-yellow-800" },
-  confirmed: { label: "Confirmada", colors: "bg-green-100 text-green-800" },
+  pending: { label: "Pendiente", colors: "bg-amber-100 text-amber-800" },
+  confirmed: { label: "Confirmada", colors: "bg-emerald-100 text-emerald-800" },
   completed: { label: "Completada", colors: "bg-blue-100 text-blue-800" },
   cancelled: { label: "Cancelada", colors: "bg-red-100 text-red-800" },
-  expired: { label: "Expirada", colors: "bg-gray-100 text-gray-800" },
+  expired: { label: "Expirada", colors: "bg-zinc-100 text-zinc-600" },
   no_show: { label: "No asistio", colors: "bg-orange-100 text-orange-800" },
 };
 
@@ -31,7 +33,7 @@ function StatusBadge({ status }: { status: ReservationStatus }) {
   const config = STATUS_CONFIG[status];
   return (
     <span
-      className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${config.colors}`}
+      className={`inline-block rounded-sm px-3 py-1 text-xs font-medium tracking-wide ${config.colors}`}
     >
       {config.label}
     </span>
@@ -47,7 +49,7 @@ export default function MyReservationsPage() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [cancelError, setCancelError] = useState<string | null>(null);
+  const toast = useToast();
   const detailRequestId = useRef(0);
 
   useEffect(() => {
@@ -106,9 +108,10 @@ export default function MyReservationsPage() {
           setDetail(response.data);
         }
         setCancellingId(null);
+        toast.success("Reservacion cancelada exitosamente.");
       })
       .catch((err) => {
-        setCancelError(
+        toast.error(
           err instanceof Error
             ? err.message
             : "Error al cancelar la reservacion",
@@ -120,18 +123,23 @@ export default function MyReservationsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <p className="text-center text-gray-600">
-          Cargando reservaciones...
-        </p>
+      <div className="mx-auto max-w-3xl px-6 py-12 animate-fade-in">
+        <h1 className="mb-8 font-serif text-4xl font-medium text-white">
+          Mis reservaciones
+        </h1>
+        <div className="space-y-3">
+          <ReservationCardSkeleton />
+          <ReservationCardSkeleton />
+          <ReservationCardSkeleton />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <p className="rounded-md bg-red-50 p-4 text-center text-red-600">
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <p className="rounded-sm bg-red-900/30 p-4 text-center text-red-400">
           {error}
         </p>
       </div>
@@ -140,35 +148,36 @@ export default function MyReservationsPage() {
 
   if (reservations.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">
+      <div className="mx-auto max-w-3xl px-6 py-12 animate-fade-in-up">
+        <h1 className="mb-8 font-serif text-4xl font-medium text-white">
           Mis reservaciones
         </h1>
-        <p className="text-center text-gray-600">
-          No tienes reservaciones aun.
-        </p>
+        <div className="rounded-sm border border-zinc-800 bg-zinc-800 px-8 py-14 text-center shadow-lg">
+          <svg className="mx-auto h-12 w-12 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p className="mt-4 font-serif text-lg text-zinc-300">
+            Aun no tienes reservaciones
+          </p>
+          <p className="mt-2 text-sm text-zinc-500">
+            Reserva una mesa y disfruta de una experiencia gastronomica unica.
+          </p>
+          <Link
+            to="/reservations/new"
+            className="mt-6 inline-block rounded-sm bg-amber-500 px-6 py-2.5 text-sm font-medium tracking-wide text-zinc-900 transition-colors duration-200 hover:bg-amber-400"
+          >
+            Reservar mesa
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">
+    <div className="mx-auto max-w-3xl px-6 py-12 animate-fade-in-up">
+      <h1 className="mb-8 font-serif text-4xl font-medium text-white">
         Mis reservaciones
       </h1>
-
-      {cancelError && (
-        <div className="mb-4 flex items-center justify-between rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-600">{cancelError}</p>
-          <button
-            type="button"
-            onClick={() => setCancelError(null)}
-            className="text-sm font-medium text-red-600 hover:text-red-800"
-          >
-            Cerrar
-          </button>
-        </div>
-      )}
 
       <div className="space-y-3">
         {reservations.map((reservation) => {
@@ -177,65 +186,70 @@ export default function MyReservationsPage() {
           return (
             <div
               key={reservation.id}
-              className="overflow-hidden rounded-lg border border-gray-200 bg-white"
+              className="overflow-hidden rounded-sm border border-zinc-800 bg-zinc-800"
             >
               <button
                 type="button"
                 onClick={() => toggleAccordion(reservation.id)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors duration-200 hover:bg-zinc-800"
                 aria-expanded={isExpanded}
               >
                 <div className="flex items-center gap-4">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-white">
                     {formatDate(reservation.date)}
                   </span>
-                  <span className="text-gray-600">
+                  <span className="text-zinc-400">
                     {formatTime(reservation.start_time)}
                   </span>
                   {reservation.table && (
-                    <span className="text-gray-600">
+                    <span className="hidden text-zinc-500 sm:inline">
                       {reservation.table.name}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusBadge status={reservation.status} />
-                  <span className="text-gray-400">{isExpanded ? "▲" : "▼"}</span>
+                  <svg
+                    className={`h-4 w-4 text-zinc-500 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="border-t border-gray-200 px-4 py-4">
+                <div className="border-t border-zinc-700 px-6 py-5">
                   {isDetailLoading ? (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-zinc-500">
                       Cargando detalles...
                     </p>
                   ) : detail ? (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <div>
-                          <span className="text-gray-500">Fecha</span>
-                          <p className="font-medium text-gray-900">
+                          <span className="text-zinc-500">Fecha</span>
+                          <p className="font-medium text-white">
                             {formatDate(detail.date)}
                           </p>
                         </div>
                         <div>
-                          <span className="text-gray-500">Horario</span>
-                          <p className="font-medium text-gray-900">
+                          <span className="text-zinc-500">Horario</span>
+                          <p className="font-medium text-white">
                             {formatTime(detail.start_time)} -{" "}
                             {formatTime(detail.end_time)}
                           </p>
                         </div>
                         <div>
-                          <span className="text-gray-500">Personas</span>
-                          <p className="font-medium text-gray-900">
+                          <span className="text-zinc-500">Personas</span>
+                          <p className="font-medium text-white">
                             {detail.seats_requested}
                           </p>
                         </div>
                         {detail.table && (
                           <div>
-                            <span className="text-gray-500">Mesa</span>
-                            <p className="font-medium text-gray-900">
+                            <span className="text-zinc-500">Mesa</span>
+                            <p className="font-medium text-white">
                               {detail.table.name} · {detail.table.location}
                             </p>
                           </div>
@@ -243,16 +257,16 @@ export default function MyReservationsPage() {
                         {detail.payment && (
                           <>
                             <div>
-                              <span className="text-gray-500">Deposito</span>
-                              <p className="font-medium text-gray-900">
+                              <span className="text-zinc-500">Deposito</span>
+                              <p className="font-medium text-amber-500">
                                 ${detail.payment.amount}
                               </p>
                             </div>
                             <div>
-                              <span className="text-gray-500">
+                              <span className="text-zinc-500">
                                 Estado del pago
                               </span>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-medium text-white">
                                 {detail.payment.status}
                               </p>
                             </div>
@@ -264,7 +278,7 @@ export default function MyReservationsPage() {
                         {detail.status === "confirmed" && (
                           <Link
                             to={`/my-reservations/${detail.id}/pre-order`}
-                            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                            className="rounded-sm bg-amber-500 px-4 py-2 text-sm font-medium text-zinc-900 transition-colors duration-200 hover:bg-amber-400"
                           >
                             Pre-ordenar
                           </Link>
@@ -273,7 +287,7 @@ export default function MyReservationsPage() {
                           <button
                             type="button"
                             onClick={() => setCancellingId(detail.id)}
-                            className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                            className="rounded-sm border border-red-800 px-4 py-2 text-sm font-medium text-red-400 transition-colors duration-200 hover:bg-red-900/30"
                           >
                             Cancelar
                           </button>
@@ -281,7 +295,7 @@ export default function MyReservationsPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-red-600">
+                    <p className="text-sm text-red-400">
                       No se pudieron cargar los detalles.
                     </p>
                   )}

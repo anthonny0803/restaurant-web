@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "../context/AuthContext";
+import { ToastProvider } from "../context/ToastContext";
 import Layout from "../components/Layout";
 import GuestRoute from "./GuestRoute";
 import ProtectedRoute from "./ProtectedRoute";
@@ -19,6 +20,7 @@ export default function Router() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ToastProvider>
         <Routes>
           <Route element={<Layout />}>
             {/* Public routes */}
@@ -59,6 +61,7 @@ export default function Router() {
             </Route>
           </Route>
         </Routes>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );

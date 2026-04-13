@@ -26,7 +26,7 @@ export default function FormField<T extends FieldValues>({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={name} className="text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="text-sm font-medium text-zinc-400">
         {label}
       </label>
       <input
@@ -34,12 +34,12 @@ export default function FormField<T extends FieldValues>({
         type={type}
         placeholder={placeholder}
         {...register(name)}
-        className={`rounded-md border px-3 py-2 text-sm outline-none transition-colors
-          focus:ring-2 focus:ring-indigo-500
-          ${error ? "border-red-500" : "border-gray-300"}`}
+        className={`rounded-sm border bg-zinc-700 px-3 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors duration-200
+          focus:ring-1 focus:ring-amber-500
+          ${error ? "border-red-500" : "border-zinc-600"}`}
       />
       {error?.message && (
-        <p className="text-sm text-red-600">{String(error.message)}</p>
+        <p className="text-sm text-red-400">{String(error.message)}</p>
       )}
     </div>
   );

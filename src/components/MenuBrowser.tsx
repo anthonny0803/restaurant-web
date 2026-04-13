@@ -31,40 +31,40 @@ function MenuItemCard({
   const isAdding = addingItemId === item.id;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-sm border border-zinc-700 bg-zinc-800 p-5 transition-colors duration-200 hover:border-zinc-600">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-medium text-gray-900">{item.name}</h3>
+          <h3 className="font-medium text-zinc-200">{item.name}</h3>
           {item.description && (
-            <p className="mt-1 text-sm text-gray-500">{item.description}</p>
+            <p className="mt-1 text-sm text-zinc-500">{item.description}</p>
           )}
         </div>
-        <span className="shrink-0 font-semibold text-indigo-600">
+        <span className="shrink-0 font-medium text-amber-500">
           ${item.price}
         </span>
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2">
         <input
           type="number"
           min={1}
           value={quantity}
           onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
           disabled={!item.is_available || isAdding}
-          className="w-16 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 disabled:opacity-50"
+          className="w-16 rounded-sm border border-zinc-600 bg-zinc-700 px-2 py-1 text-sm text-white outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
         />
         <button
           type="button"
           onClick={() => onAddItem(item.id, quantity)}
           disabled={!item.is_available || isAdding}
-          className="rounded-md bg-indigo-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-sm bg-amber-500 px-3 py-1 text-sm font-medium text-zinc-900 transition-colors duration-200 hover:bg-amber-400 disabled:opacity-50"
         >
           {isAdding ? "Agregando..." : "Agregar"}
         </button>
       </div>
 
       {!item.is_available && (
-        <p className="mt-1 text-xs text-red-500">No disponible</p>
+        <p className="mt-2 text-xs text-red-400">No disponible</p>
       )}
     </div>
   );
@@ -90,16 +90,16 @@ export default function MenuBrowser({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900">Menu</h2>
+      <h2 className="font-serif text-2xl font-medium text-white">Menu</h2>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => onCategoryChange(null)}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
+          className={`cursor-pointer rounded-sm px-4 py-2 text-sm tracking-wide transition-colors duration-200
             ${!activeCategory
-              ? "bg-indigo-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              ? "bg-amber-500 text-zinc-900"
+              : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}
         >
           Todos
         </button>
@@ -108,29 +108,29 @@ export default function MenuBrowser({
             key={cat.value}
             type="button"
             onClick={() => onCategoryChange(cat.value)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors
+            className={`cursor-pointer rounded-sm px-4 py-2 text-sm tracking-wide transition-colors duration-200
               ${activeCategory === cat.value
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                ? "bg-amber-500 text-zinc-900"
+                : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"}`}
           >
             {cat.label}
           </button>
         ))}
       </div>
 
-      {isLoading && <p className="mt-6 text-gray-500">Cargando menu...</p>}
+      {isLoading && <p className="mt-6 text-zinc-500">Cargando menu...</p>}
 
-      {error && <p className="mt-6 text-red-600">{error}</p>}
+      {error && <p className="mt-6 text-red-400">{error}</p>}
 
       {!isLoading && !error && items.length === 0 && (
-        <p className="mt-6 text-gray-500">No hay items disponibles.</p>
+        <p className="mt-6 text-zinc-500">No hay items disponibles.</p>
       )}
 
       {!isLoading && !error && items.length > 0 && (
         <div className="mt-6 space-y-8">
           {CATEGORIES.filter((cat) => groupedItems[cat.value]).map((cat) => (
             <section key={cat.value}>
-              <h3 className="text-lg font-semibold text-gray-800">
+              <h3 className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">
                 {cat.label}
               </h3>
               <div className="mt-3 grid gap-4 sm:grid-cols-2">

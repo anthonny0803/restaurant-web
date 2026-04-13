@@ -34,11 +34,11 @@ export default function ForgotPasswordPage() {
   return (
     <AuthFormWrapper title="Recuperar contrasena" error={errors.root?.message}>
       {successMessage ? (
-        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700">
+        <div className="rounded-sm bg-emerald-900/30 p-4 text-sm text-emerald-400">
           <p>{successMessage}</p>
           <Link
             to="/login"
-            className="mt-3 inline-block font-medium text-indigo-600 hover:text-indigo-700"
+            className="mt-3 inline-block font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
           >
             Volver a iniciar sesion
           </Link>
@@ -65,10 +65,10 @@ export default function ForgotPasswordPage() {
             />
           </form>
 
-          <p className="mt-4 text-center text-sm text-gray-600">
+          <p className="mt-4 text-center text-sm text-zinc-500">
             <Link
               to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-700"
+              className="font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
             >
               Volver a iniciar sesion
             </Link>

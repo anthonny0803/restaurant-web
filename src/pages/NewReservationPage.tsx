@@ -18,9 +18,9 @@ function formatDate(date: Date): string {
 
 function generateTimeSlots(): string[] {
   const slots: string[] = [];
-  for (let hour = 12; hour <= 22; hour++) {
+  for (let hour = 13; hour <= 23; hour++) {
     slots.push(`${String(hour).padStart(2, "0")}:00`);
-    if (hour < 22) {
+    if (hour < 23) {
       slots.push(`${String(hour).padStart(2, "0")}:30`);
     }
   }
@@ -39,6 +39,13 @@ const GUEST_FIELDS: (keyof GuestForm)[] = ["name", "email", "phone"];
 
 const STEP_LABELS = ["Buscar", "Elegir mesa", "Confirmar"];
 
+const SEAT_GROUPS = [
+  { label: "1-2", value: "2", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
+  { label: "3-4", value: "4", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+  { label: "5-6", value: "6", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+  { label: "7-8", value: "8", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+];
+
 export default function NewReservationPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -52,6 +59,29 @@ export default function NewReservationPage() {
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
+
+  const isToday = date === minDateStr;
+  const availableSlots = isToday
+    ? TIME_SLOTS.filter((slot) => {
+        const now = new Date();
+        const [h, m] = slot.split(":").map(Number);
+        return h > now.getHours() || (h === now.getHours() && m > now.getMinutes());
+      })
+    : TIME_SLOTS;
+
+  const handleDateChange = (newDate: string) => {
+    setDate(newDate);
+    if (newDate === minDateStr) {
+      const now = new Date();
+      const isSlotPast = (slot: string) => {
+        const [h, m] = slot.split(":").map(Number);
+        return h < now.getHours() || (h === now.getHours() && m <= now.getMinutes());
+      };
+      if (startTime && isSlotPast(startTime)) {
+        setStartTime("");
+      }
+    }
+  };
   const [seatsRequested, setSeatsRequested] = useState("");
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
@@ -67,6 +97,11 @@ export default function NewReservationPage() {
   } = useForm<GuestForm>();
 
   const searchTables = async () => {
+    if (!date || !startTime || !seatsRequested) {
+      setError("Completa todos los campos para buscar mesas.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -148,26 +183,65 @@ export default function NewReservationPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900">Nueva reservacion</h1>
+    <div className="mx-auto max-w-lg px-6 py-12 animate-fade-in-up">
+      <h1 className="text-center font-serif text-4xl font-medium text-white">
+        Reservar mesa
+      </h1>
+      <div className="mx-auto mt-3 h-px w-12 bg-amber-500" />
 
-      <div className="mt-4 flex gap-2 text-sm">
-        {STEP_LABELS.map((label, i) => (
-          <span
-            key={label}
-            className={`rounded-full px-3 py-1 ${
-              step === i + 1
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-100 text-gray-500"
-            }`}
-          >
-            {label}
-          </span>
-        ))}
+      <div className="mt-8 rounded-sm border border-zinc-700 bg-zinc-800 p-8 shadow-lg">
+
+      <div className="flex items-center justify-between">
+        {STEP_LABELS.map((label, i) => {
+          const stepNum = i + 1;
+          const isCompleted = step > stepNum;
+          const isCurrent = step === stepNum;
+
+          return (
+            <div key={label} className="flex flex-1 items-center">
+              <div className="flex flex-col items-center gap-1.5">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all duration-300 ${
+                    isCompleted
+                      ? "bg-amber-500 text-zinc-900"
+                      : isCurrent
+                        ? "bg-white text-zinc-900 ring-2 ring-white ring-offset-2 ring-offset-zinc-800"
+                        : "bg-zinc-700 text-zinc-500"
+                  }`}
+                >
+                  {isCompleted ? (
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    stepNum
+                  )}
+                </div>
+                <span
+                  className={`text-xs tracking-wide ${
+                    isCurrent ? "font-medium text-white" : "text-zinc-500"
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+
+              {i < STEP_LABELS.length - 1 && (
+                <div className="mx-2 mb-5 h-px flex-1">
+                  <div
+                    className={`h-full transition-colors duration-300 ${
+                      isCompleted ? "bg-amber-500" : "bg-zinc-700"
+                    }`}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {error && (
-        <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-600">
+        <p className="mt-4 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
           {error}
         </p>
       )}
@@ -178,12 +252,12 @@ export default function NewReservationPage() {
             e.preventDefault();
             searchTables();
           }}
-          className="mt-6 flex flex-col gap-4"
+          className="mt-6 flex flex-col gap-5"
         >
           <div className="flex flex-col gap-1">
             <label
               htmlFor="date"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium text-zinc-400"
             >
               Fecha
             </label>
@@ -193,61 +267,67 @@ export default function NewReservationPage() {
               min={minDateStr}
               max={maxDateStr}
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => handleDateChange(e.target.value)}
               required
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none
-                transition-colors focus:ring-2 focus:ring-indigo-500"
+              className="rounded-sm border border-zinc-600 bg-zinc-700 px-3 py-2.5 text-sm text-white outline-none
+                transition-colors duration-200 focus:ring-1 focus:ring-amber-500"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="start_time"
-              className="text-sm font-medium text-gray-700"
-            >
-              Hora
-            </label>
-            <select
-              id="start_time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              required
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none
-                transition-colors focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">Selecciona una hora</option>
-              {TIME_SLOTS.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-zinc-400">Hora</span>
+            {!date ? (
+              <p className="text-sm text-zinc-500">Selecciona una fecha primero</p>
+            ) : availableSlots.length === 0 ? (
+              <p className="text-sm text-zinc-500">No hay horarios disponibles para esta fecha</p>
+            ) : (
+              <div className="grid grid-cols-4 gap-1.5">
+                {availableSlots.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setStartTime(slot)}
+                    className={`cursor-pointer rounded-sm px-2 py-2 text-xs font-medium transition-all duration-200 ${
+                      startTime === slot
+                        ? "bg-amber-500 text-zinc-900 shadow-sm"
+                        : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-zinc-400">Personas</span>
+            <div className="grid grid-cols-4 gap-2">
+              {SEAT_GROUPS.map((group) => (
+                <button
+                  key={group.value}
+                  type="button"
+                  onClick={() => setSeatsRequested(group.value)}
+                  className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-sm px-3 py-3 transition-all duration-200 ${
+                    seatsRequested === group.value
+                      ? "bg-amber-500 text-zinc-900 shadow-sm"
+                      : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+                  }`}
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={group.icon} />
+                  </svg>
+                  <span className="text-xs font-medium">{group.label}</span>
+                </button>
               ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="seats"
-              className="text-sm font-medium text-gray-700"
-            >
-              Personas
-            </label>
-            <input
-              id="seats"
-              type="number"
-              min="1"
-              value={seatsRequested}
-              onChange={(e) => setSeatsRequested(e.target.value)}
-              required
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none
-                transition-colors focus:ring-2 focus:ring-indigo-500"
-            />
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="rounded-md bg-indigo-600 py-2 text-sm font-medium text-white
-              transition-colors hover:bg-indigo-700
+            className="rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+              transition-colors duration-200 hover:bg-amber-600
               disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? "Buscando..." : "Buscar mesas disponibles"}
@@ -257,7 +337,7 @@ export default function NewReservationPage() {
 
       {step === 2 && (
         <div className="mt-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-zinc-500">
             {tables.length}{" "}
             {tables.length === 1 ? "mesa disponible" : "mesas disponibles"}{" "}
             para {date} a las {startTime}
@@ -269,22 +349,23 @@ export default function NewReservationPage() {
                 key={table.id}
                 type="button"
                 onClick={() => setSelectedTable(table)}
-                className={`rounded-lg border p-4 text-left transition-colors ${
+                className={`rounded-sm border p-5 text-left transition-all duration-200 ${
                   selectedTable?.id === table.id
-                    ? "border-indigo-600 bg-indigo-50 ring-2 ring-indigo-500"
-                    : "border-gray-200 bg-white hover:border-gray-300"
+                    ? "border-amber-500 bg-amber-500/10 text-white"
+                    : "border-zinc-700 text-zinc-200 hover:border-zinc-500"
                 }`}
               >
-                <p className="font-medium text-gray-900">{table.name}</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  {table.min_capacity}-{table.max_capacity} personas ·{" "}
-                  {table.location}
+                <p className="font-medium">{table.name}</p>
+                <p className={`mt-1 text-sm ${
+                  selectedTable?.id === table.id ? "text-amber-400" : "text-zinc-500"
+                }`}>
+                  {table.min_capacity}-{table.max_capacity} personas · {table.location}
                 </p>
               </button>
             ))}
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-8 flex gap-3">
             <button
               type="button"
               onClick={() => {
@@ -292,8 +373,8 @@ export default function NewReservationPage() {
                 setSelectedTable(null);
                 setError("");
               }}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm
-                font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="rounded-sm border border-zinc-700 px-4 py-2.5 text-sm
+                font-medium text-zinc-400 transition-colors duration-200 hover:border-zinc-500 hover:text-white"
             >
               Volver
             </button>
@@ -301,8 +382,8 @@ export default function NewReservationPage() {
               type="button"
               onClick={() => setStep(3)}
               disabled={!selectedTable}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white
-                transition-colors hover:bg-indigo-700
+              className="rounded-sm bg-amber-500 px-4 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+                transition-colors duration-200 hover:bg-amber-400
                 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuar
@@ -313,24 +394,26 @@ export default function NewReservationPage() {
 
       {step === 3 && selectedTable && (
         <div className="mt-6">
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h2 className="font-medium text-gray-900">Resumen</h2>
-            <dl className="mt-2 space-y-1 text-sm text-gray-600">
+          <div className="rounded-sm border border-zinc-600 bg-zinc-700 p-5">
+            <h2 className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">
+              Resumen
+            </h2>
+            <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between">
-                <dt>Fecha</dt>
-                <dd>{date}</dd>
+                <dt className="text-zinc-500">Fecha</dt>
+                <dd className="font-medium text-white">{date}</dd>
               </div>
               <div className="flex justify-between">
-                <dt>Hora</dt>
-                <dd>{startTime}</dd>
+                <dt className="text-zinc-500">Hora</dt>
+                <dd className="font-medium text-white">{startTime}</dd>
               </div>
               <div className="flex justify-between">
-                <dt>Personas</dt>
-                <dd>{seatsRequested}</dd>
+                <dt className="text-zinc-500">Personas</dt>
+                <dd className="font-medium text-white">{seatsRequested}</dd>
               </div>
               <div className="flex justify-between">
-                <dt>Mesa</dt>
-                <dd>{selectedTable.name}</dd>
+                <dt className="text-zinc-500">Mesa</dt>
+                <dd className="font-medium text-white">{selectedTable.name}</dd>
               </div>
             </dl>
           </div>
@@ -340,8 +423,8 @@ export default function NewReservationPage() {
               type="button"
               onClick={createRegisteredHold}
               disabled={isHoldSubmitting}
-              className="mt-6 w-full rounded-md bg-indigo-600 py-2 text-sm font-medium
-                text-white transition-colors hover:bg-indigo-700
+              className="mt-6 w-full rounded-sm bg-amber-500 py-2.5 text-sm font-medium
+                tracking-wide text-zinc-900 transition-colors duration-200 hover:bg-amber-600
                 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isHoldSubmitting ? "Reservando..." : "Reservar"}
@@ -351,12 +434,12 @@ export default function NewReservationPage() {
               onSubmit={handleGuestSubmit(createGuestHold)}
               className="mt-6 flex flex-col gap-4"
             >
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-zinc-400">
                 Ingresa tus datos para continuar con la reservacion.
               </p>
 
               {guestErrors.root?.message && (
-                <p className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                <p className="rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
                   {guestErrors.root.message}
                 </p>
               )}
@@ -398,13 +481,15 @@ export default function NewReservationPage() {
               setStep(2);
               setError("");
             }}
-            className="mt-3 w-full rounded-md border border-gray-300 bg-white py-2 text-sm
-              font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="mt-3 w-full rounded-sm border border-zinc-700 py-2.5 text-sm
+              font-medium text-zinc-400 transition-colors duration-200 hover:border-zinc-500 hover:text-white"
           >
             Volver
           </button>
         </div>
       )}
+
+      </div>
     </div>
   );
 }

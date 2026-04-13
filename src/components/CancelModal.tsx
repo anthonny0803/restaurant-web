@@ -32,13 +32,13 @@ export default function CancelModal({
       onClick={() => { if (!isSubmitting) onClose(); }}
     >
       <div
-        className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-lg"
+        className="mx-4 w-full max-w-md rounded-sm border border-zinc-700 bg-zinc-800 p-8 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-white">
           Cancelar reservacion
         </h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-zinc-400">
           Esta accion no se puede deshacer. Dependiendo de la politica de
           cancelacion, podrias recibir un reembolso total o parcial.
         </p>
@@ -48,7 +48,7 @@ export default function CancelModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-sm border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-400 hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Volver
           </button>
@@ -56,7 +56,7 @@ export default function CancelModal({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-sm bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Cancelando..." : "Cancelar reservacion"}
           </button>

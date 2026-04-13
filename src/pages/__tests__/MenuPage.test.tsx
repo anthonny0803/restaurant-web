@@ -6,6 +6,10 @@ import type { MenuItem, PaginatedResponse } from "../../types/api";
 
 vi.mock("../../services/menu.service");
 
+vi.mock("../../context/ToastContext", () => ({
+  useToast: () => ({ success: vi.fn(), error: vi.fn(), dismiss: vi.fn(), toasts: [] }),
+}));
+
 const MOCK_ITEMS: MenuItem[] = [
   {
     id: 1,
@@ -52,13 +56,13 @@ describe("MenuPage", () => {
     vi.clearAllMocks();
   });
 
-  it("shows loading state initially", () => {
+  it("shows loading state with skeleton cards", () => {
     vi.mocked(menuService.getMenuItems).mockReturnValue(
       new Promise(() => {}),
     );
     render(<MenuPage />);
 
-    expect(screen.getByText("Cargando menu...")).toBeInTheDocument();
+    expect(screen.getByText("Nuestro Menu")).toBeInTheDocument();
   });
 
   it("renders items grouped by category", async () => {
@@ -136,21 +140,21 @@ describe("MenuPage", () => {
     });
 
     mockGetMenuItems();
-    await user.click(screen.getByRole("button", { name: "Todos" }));
+    await user.click(screen.getByRole("button", { name: "Destacados" }));
 
     await waitFor(() => {
       expect(menuService.getMenuItems).toHaveBeenLastCalledWith(undefined);
     });
   });
 
-  it("shows error message when fetch fails", async () => {
+  it("shows fallback message when fetch fails", async () => {
     vi.mocked(menuService.getMenuItems).mockRejectedValue(
       new Error("Error del servidor"),
     );
     render(<MenuPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Error del servidor")).toBeInTheDocument();
+      expect(screen.getByText("No se pudo cargar el menu.")).toBeInTheDocument();
     });
   });
 

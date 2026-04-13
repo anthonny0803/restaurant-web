@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import NewReservationPage from "../NewReservationPage";
@@ -106,14 +106,24 @@ function renderPage() {
 }
 
 async function fillSearchAndSubmit(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByLabelText("Fecha"), "2026-04-10");
-  await user.selectOptions(screen.getByLabelText("Hora"), "19:00");
-  await user.clear(screen.getByLabelText("Personas"));
-  await user.type(screen.getByLabelText("Personas"), "4");
+  fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: TEST_DATE } });
+  await user.click(screen.getByRole("button", { name: "19:00" }));
+  await user.click(screen.getByRole("button", { name: "3-4" }));
   await user.click(
     screen.getByRole("button", { name: "Buscar mesas disponibles" }),
   );
 }
+
+function futureDate(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 2);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+const TEST_DATE = futureDate();
 
 describe("NewReservationPage", () => {
   beforeEach(() => {
@@ -126,8 +136,8 @@ describe("NewReservationPage", () => {
       renderPage();
 
       expect(screen.getByLabelText("Fecha")).toBeInTheDocument();
-      expect(screen.getByLabelText("Hora")).toBeInTheDocument();
-      expect(screen.getByLabelText("Personas")).toBeInTheDocument();
+      expect(screen.getByText("Hora")).toBeInTheDocument();
+      expect(screen.getByText("Personas")).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Buscar mesas disponibles" }),
       ).toBeInTheDocument();
@@ -152,7 +162,7 @@ describe("NewReservationPage", () => {
         expect(
           reservationService.getAvailableTables,
         ).toHaveBeenCalledWith({
-          date: "2026-04-10",
+          date: TEST_DATE,
           start_time: "19:00",
           seats_requested: 4,
         });

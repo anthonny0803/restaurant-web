@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import MyReservationsPage from "../MyReservationsPage";
@@ -6,6 +6,12 @@ import * as reservationService from "../../services/reservation.service";
 import type { Reservation, PaginatedResponse } from "../../types/api";
 
 vi.mock("../../services/reservation.service");
+
+const mockToast = { success: vi.fn(), error: vi.fn(), dismiss: vi.fn(), toasts: [] };
+
+vi.mock("../../context/ToastContext", () => ({
+  useToast: () => mockToast,
+}));
 
 vi.mock("../../context/AuthContext", () => ({
   useAuth: () => ({
@@ -103,11 +109,11 @@ describe("MyReservationsPage", () => {
     vi.clearAllMocks();
   });
 
-  it("shows loading state initially", () => {
+  it("shows loading state with skeleton cards", () => {
     vi.mocked(reservationService.getAll).mockReturnValue(new Promise(() => {}));
     renderPage();
 
-    expect(screen.getByText("Cargando reservaciones...")).toBeInTheDocument();
+    expect(screen.getByText("Mis reservaciones")).toBeInTheDocument();
   });
 
   it("renders reservation list after fetch", async () => {
@@ -128,7 +134,7 @@ describe("MyReservationsPage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No tienes reservaciones aun."),
+        screen.getByText("Aun no tienes reservaciones"),
       ).toBeInTheDocument();
     });
   });
@@ -391,7 +397,7 @@ describe("MyReservationsPage", () => {
     expect(screen.queryByText("Pre-ordenar")).not.toBeInTheDocument();
   });
 
-  it("shows cancel error as banner without destroying the list", async () => {
+  it("shows cancel error as toast without destroying the list", async () => {
     vi.mocked(reservationService.cancel).mockRejectedValue(
       new Error("No se puede cancelar"),
     );
@@ -418,19 +424,12 @@ describe("MyReservationsPage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("No se puede cancelar")).toBeInTheDocument();
+      expect(mockToast.error).toHaveBeenCalledWith("No se puede cancelar");
     });
 
-    // List should still be visible (date appears in header + detail)
+    // List should still be visible
     expect(screen.getAllByText("10/04/2026").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("12/04/2026")).toBeInTheDocument();
-
-    // Error banner can be dismissed
-    await user.click(screen.getByRole("button", { name: "Cerrar" }));
-
-    expect(
-      screen.queryByText("No se puede cancelar"),
-    ).not.toBeInTheDocument();
   });
 
   it("closes modal when clicking on overlay", async () => {

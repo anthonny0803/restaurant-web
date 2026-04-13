@@ -51,11 +51,11 @@ export default function ResetPasswordPage() {
   if (hasMissingParams) {
     return (
       <AuthFormWrapper title="Enlace invalido">
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
+        <div className="rounded-sm bg-red-900/30 p-4 text-sm text-red-400">
           <p>El enlace de recuperacion es invalido o ha expirado.</p>
           <Link
             to="/forgot-password"
-            className="mt-3 inline-block font-medium text-indigo-600 hover:text-indigo-700"
+            className="mt-3 inline-block font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
           >
             Solicitar un nuevo enlace
           </Link>

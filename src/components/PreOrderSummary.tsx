@@ -14,40 +14,40 @@ export default function PreOrderSummary({
   const total = items.reduce((sum, item) => sum + Number(item.subtotal), 0);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 lg:sticky lg:top-8">
-      <h2 className="text-xl font-semibold text-gray-900">Tu pre-orden</h2>
+    <div className="rounded-sm border border-zinc-800 bg-zinc-800 p-6 shadow-lg lg:sticky lg:top-24">
+      <h2 className="font-serif text-xl font-medium text-white">Tu pre-orden</h2>
 
       {items.length === 0 && (
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="mt-4 text-sm text-zinc-500">
           No has agregado items aun.
         </p>
       )}
 
       {items.length > 0 && (
         <>
-          <div className="mt-4 divide-y divide-gray-100">
+          <div className="mt-4 divide-y divide-zinc-700">
             {items.map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between py-3"
               >
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-zinc-200">
                     {item.menu_item.name}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-zinc-500">
                     {item.quantity} x ${item.unit_price}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-white">
                     ${item.subtotal}
                   </span>
                   <button
                     type="button"
                     onClick={() => onRemoveItem(item.id)}
                     disabled={removingItemId === item.id}
-                    className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
+                    className="cursor-pointer text-sm font-medium text-red-400 transition-colors duration-200 hover:text-red-300 disabled:opacity-50"
                   >
                     {removingItemId === item.id ? "..." : "Eliminar"}
                   </button>
@@ -56,9 +56,9 @@ export default function PreOrderSummary({
             ))}
           </div>
 
-          <div className="mt-4 flex justify-between border-t border-gray-200 pt-4">
-            <span className="text-lg font-semibold text-gray-900">Total</span>
-            <span className="text-lg font-semibold text-indigo-600">
+          <div className="mt-4 flex justify-between border-t border-zinc-700 pt-4">
+            <span className="text-lg font-semibold text-white">Total</span>
+            <span className="text-lg font-semibold text-amber-500">
               ${total.toFixed(2)}
             </span>
           </div>

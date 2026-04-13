@@ -35,13 +35,13 @@ function CheckoutForm({ reservation }: CheckoutFormProps) {
 
   if (isExpired(reservation.expires_at)) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900">Pago</h1>
-        <div className="mt-6 rounded-md bg-red-50 p-4 text-sm text-red-600">
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="font-serif text-4xl font-medium text-white">Pago</h1>
+        <div className="mt-6 rounded-sm bg-red-900/30 p-4 text-sm text-red-400">
           <p>Tu reservacion ha expirado. Por favor, crea una nueva.</p>
           <Link
             to="/reservations/new"
-            className="mt-2 inline-block font-medium text-indigo-600 hover:text-indigo-700"
+            className="mt-2 inline-block font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
           >
             Crear nueva reservacion
           </Link>
@@ -52,14 +52,14 @@ function CheckoutForm({ reservation }: CheckoutFormProps) {
 
   if (isComplete) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900">Pago exitoso</h1>
-        <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="font-serif text-4xl font-medium text-white">Pago exitoso</h1>
+        <div className="mt-6 rounded-sm bg-emerald-900/30 p-4 text-sm text-emerald-400">
           <p>Tu reservacion ha sido confirmada.</p>
           {isAuthenticated ? (
             <Link
               to="/my-reservations"
-              className="mt-2 inline-block font-medium text-indigo-600 hover:text-indigo-700"
+              className="mt-2 inline-block font-medium text-amber-500 transition-colors duration-200 hover:text-amber-400"
             >
               Ver mis reservaciones
             </Link>
@@ -104,52 +104,56 @@ function CheckoutForm({ reservation }: CheckoutFormProps) {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900">Pago</h1>
+    <div className="mx-auto max-w-2xl px-6 py-12 animate-fade-in-up">
+      <h1 className="font-serif text-4xl font-medium text-white">Pago</h1>
 
-      <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h2 className="font-medium text-gray-900">Resumen de reservacion</h2>
-        <dl className="mt-2 space-y-1 text-sm text-gray-600">
+      <div className="mt-8 rounded-sm border border-zinc-800 bg-zinc-800 p-6 shadow-lg">
+        <h2 className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">
+          Resumen de reservacion
+        </h2>
+        <dl className="mt-4 space-y-3 text-sm">
           <div className="flex justify-between">
-            <dt>Fecha</dt>
-            <dd>{reservation.date}</dd>
+            <dt className="text-zinc-500">Fecha</dt>
+            <dd className="font-medium text-white">{reservation.date}</dd>
           </div>
           <div className="flex justify-between">
-            <dt>Hora</dt>
-            <dd>{reservation.start_time}</dd>
+            <dt className="text-zinc-500">Hora</dt>
+            <dd className="font-medium text-white">{reservation.start_time}</dd>
           </div>
           <div className="flex justify-between">
-            <dt>Personas</dt>
-            <dd>{reservation.seats_requested}</dd>
+            <dt className="text-zinc-500">Personas</dt>
+            <dd className="font-medium text-white">{reservation.seats_requested}</dd>
           </div>
           {reservation.table && (
             <div className="flex justify-between">
-              <dt>Mesa</dt>
-              <dd>{reservation.table.name}</dd>
+              <dt className="text-zinc-500">Mesa</dt>
+              <dd className="font-medium text-white">{reservation.table.name}</dd>
             </div>
           )}
           {reservation.payment && (
-            <div className="flex justify-between font-medium text-gray-900">
-              <dt>Deposito</dt>
-              <dd>{formatCurrency(reservation.payment.amount)}</dd>
+            <div className="flex justify-between border-t border-zinc-700 pt-3">
+              <dt className="font-medium text-white">Deposito</dt>
+              <dd className="font-medium text-amber-500">
+                {formatCurrency(reservation.payment.amount)}
+              </dd>
             </div>
           )}
         </dl>
       </div>
 
       {error && (
-        <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-600">
+        <p className="mt-6 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
           {error}
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
         <PaymentElement />
         <button
           type="submit"
           disabled={isProcessing || !stripe || !elements}
-          className="rounded-md bg-indigo-600 py-2 text-sm font-medium text-white
-            transition-colors hover:bg-indigo-700
+          className="rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+            transition-colors duration-200 hover:bg-amber-400
             disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isProcessing ? "Procesando..." : "Pagar deposito"}

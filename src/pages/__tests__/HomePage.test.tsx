@@ -16,7 +16,7 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Bienvenido a nuestro restaurante",
+        name: "Donde cada detalle importa",
       }),
     ).toBeInTheDocument();
   });

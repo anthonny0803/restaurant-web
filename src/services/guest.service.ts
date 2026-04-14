@@ -13,7 +13,7 @@ interface GuestReservationBody {
 
 interface GuestReservationResponse {
   reservation: Reservation;
-  payment_intent_client_secret: string;
+  client_secret: string;
 }
 
 export function createGuestReservation(body: GuestReservationBody) {

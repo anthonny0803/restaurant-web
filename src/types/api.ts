@@ -76,6 +76,12 @@ export interface ReservationItem {
   created_at: string;
 }
 
+export interface PublicSettings {
+  opening_time: string;
+  closing_time: string;
+  time_slot_interval_minutes: string;
+}
+
 // --- API response wrappers ---
 
 export interface ApiResponse<T> {

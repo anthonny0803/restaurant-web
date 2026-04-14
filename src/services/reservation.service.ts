@@ -15,7 +15,7 @@ interface HoldReservationBody {
 
 interface HoldReservationResponse {
   reservation: Reservation;
-  payment_intent_client_secret: string;
+  client_secret: string;
 }
 
 interface AvailableTablesParams {

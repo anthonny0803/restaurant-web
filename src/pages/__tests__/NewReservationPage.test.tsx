@@ -4,11 +4,13 @@ import { MemoryRouter } from "react-router-dom";
 import NewReservationPage from "../NewReservationPage";
 import * as reservationService from "../../services/reservation.service";
 import * as guestService from "../../services/guest.service";
+import * as settingsService from "../../services/settings.service";
 import { ApiValidationError } from "../../lib/api";
 import type { Table } from "../../types/api";
 
 vi.mock("../../services/reservation.service");
 vi.mock("../../services/guest.service");
+vi.mock("../../services/settings.service");
 
 const mockNavigate = vi.fn();
 
@@ -83,7 +85,7 @@ function mockCreateHold() {
   vi.mocked(reservationService.createHold).mockResolvedValue({
     data: {
       reservation: MOCK_HOLD_RESERVATION,
-      payment_intent_client_secret: "pi_secret_123",
+      client_secret: "pi_secret_123",
     },
   });
 }
@@ -92,17 +94,30 @@ function mockCreateGuestReservation() {
   vi.mocked(guestService.createGuestReservation).mockResolvedValue({
     data: {
       reservation: MOCK_GUEST_RESERVATION,
-      payment_intent_client_secret: "pi_secret_456",
+      client_secret: "pi_secret_456",
     },
   });
 }
 
-function renderPage() {
-  return render(
+function mockGetPublicSettings() {
+  vi.mocked(settingsService.getPublicSettings).mockResolvedValue({
+    data: {
+      opening_time: "13:00",
+      closing_time: "23:00",
+      time_slot_interval_minutes: "30",
+    },
+  });
+}
+
+async function renderPage() {
+  render(
     <MemoryRouter>
       <NewReservationPage />
     </MemoryRouter>,
   );
+  await waitFor(() => {
+    expect(screen.getByLabelText("Fecha")).toBeInTheDocument();
+  });
 }
 
 async function fillSearchAndSubmit(user: ReturnType<typeof userEvent.setup>) {
@@ -129,11 +144,12 @@ describe("NewReservationPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAuthenticated = false;
+    mockGetPublicSettings();
   });
 
   describe("Step 1 - Search", () => {
-    it("renders search form with date, time, and seats fields", () => {
-      renderPage();
+    it("renders search form with date, time, and seats fields", async () => {
+      await renderPage();
 
       expect(screen.getByLabelText("Fecha")).toBeInTheDocument();
       expect(screen.getByText("Hora")).toBeInTheDocument();
@@ -143,8 +159,8 @@ describe("NewReservationPage", () => {
       ).toBeInTheDocument();
     });
 
-    it("renders step indicators", () => {
-      renderPage();
+    it("renders step indicators", async () => {
+      await renderPage();
 
       expect(screen.getByText("Buscar")).toBeInTheDocument();
       expect(screen.getByText("Elegir mesa")).toBeInTheDocument();
@@ -153,7 +169,7 @@ describe("NewReservationPage", () => {
 
     it("calls getAvailableTables and moves to step 2", async () => {
       mockAvailableTables();
-      renderPage();
+      await renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -174,7 +190,7 @@ describe("NewReservationPage", () => {
 
     it("shows error when no tables are available", async () => {
       mockAvailableTables([]);
-      renderPage();
+      await renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -192,7 +208,7 @@ describe("NewReservationPage", () => {
       vi.mocked(reservationService.getAvailableTables).mockRejectedValue(
         new Error("Error del servidor"),
       );
-      renderPage();
+      await renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -206,7 +222,7 @@ describe("NewReservationPage", () => {
   describe("Step 2 - Table selection", () => {
     async function goToStep2() {
       mockAvailableTables();
-      renderPage();
+      await renderPage();
       const user = userEvent.setup();
       await fillSearchAndSubmit(user);
       await waitFor(() => {
@@ -256,7 +272,7 @@ describe("NewReservationPage", () => {
     async function goToStep3Registered() {
       mockIsAuthenticated = true;
       mockAvailableTables();
-      renderPage();
+      await renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -323,7 +339,7 @@ describe("NewReservationPage", () => {
     async function goToStep3Guest() {
       mockIsAuthenticated = false;
       mockAvailableTables();
-      renderPage();
+      await renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);

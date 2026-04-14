@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import FormField from "../components/FormField";
 import SubmitButton from "../components/SubmitButton";
 import { useAuth } from "../context/AuthContext";
 import { handleApiError } from "../lib/form-errors";
-import type { Reservation, Table } from "../types/api";
+import type { PublicSettings, Reservation, Table } from "../types/api";
 import * as reservationService from "../services/reservation.service";
 import * as guestService from "../services/guest.service";
+import * as settingsService from "../services/settings.service";
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -16,18 +17,20 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function generateTimeSlots(): string[] {
+function generateTimeSlots(opening: string, closing: string, intervalMinutes: number): string[] {
+  const [openH, openM] = opening.split(":").map(Number);
+  const [closeH, closeM] = closing.split(":").map(Number);
+  const startMinutes = openH * 60 + openM;
+  const endMinutes = closeH * 60 + closeM;
+
   const slots: string[] = [];
-  for (let hour = 13; hour <= 23; hour++) {
-    slots.push(`${String(hour).padStart(2, "0")}:00`);
-    if (hour < 23) {
-      slots.push(`${String(hour).padStart(2, "0")}:30`);
-    }
+  for (let m = startMinutes; m <= endMinutes; m += intervalMinutes) {
+    const h = Math.floor(m / 60);
+    const min = m % 60;
+    slots.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
   }
   return slots;
 }
-
-const TIME_SLOTS = generateTimeSlots();
 
 interface GuestForm {
   name: string;
@@ -56,18 +59,42 @@ export default function NewReservationPage() {
   const minDateStr = formatDate(today);
   const maxDateStr = formatDate(maxDate);
 
+  const [settings, setSettings] = useState<PublicSettings | null>(null);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState("");
+
+  useEffect(() => {
+    settingsService
+      .getPublicSettings()
+      .then((response) => setSettings(response.data))
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error ? err.message : "Error al cargar la configuracion";
+        setSettingsError(message);
+      })
+      .finally(() => setIsSettingsLoading(false));
+  }, []);
+
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
 
+  const timeSlots = settings
+    ? generateTimeSlots(
+        settings.opening_time,
+        settings.closing_time,
+        Number(settings.time_slot_interval_minutes),
+      )
+    : [];
+
   const isToday = date === minDateStr;
   const availableSlots = isToday
-    ? TIME_SLOTS.filter((slot) => {
+    ? timeSlots.filter((slot) => {
         const now = new Date();
         const [h, m] = slot.split(":").map(Number);
         return h > now.getHours() || (h === now.getHours() && m > now.getMinutes());
       })
-    : TIME_SLOTS;
+    : timeSlots;
 
   const handleDateChange = (newDate: string) => {
     setDate(newDate);
@@ -148,7 +175,7 @@ export default function NewReservationPage() {
         start_time: startTime,
       });
       navigateToPayment(
-        response.data.payment_intent_client_secret,
+        response.data.client_secret,
         response.data.reservation,
       );
     } catch (err: unknown) {
@@ -174,7 +201,7 @@ export default function NewReservationPage() {
         start_time: startTime,
       });
       navigateToPayment(
-        response.data.payment_intent_client_secret,
+        response.data.client_secret,
         response.data.reservation,
       );
     } catch (err) {
@@ -240,13 +267,27 @@ export default function NewReservationPage() {
         })}
       </div>
 
+      {isSettingsLoading && (
+        <div className="mt-6 space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-10 animate-pulse rounded-sm bg-zinc-700" />
+          ))}
+        </div>
+      )}
+
+      {settingsError && (
+        <p className="mt-4 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
+          {settingsError}
+        </p>
+      )}
+
       {error && (
         <p className="mt-4 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
           {error}
         </p>
       )}
 
-      {step === 1 && (
+      {!isSettingsLoading && !settingsError && step === 1 && (
         <form
           onSubmit={(e) => {
             e.preventDefault();

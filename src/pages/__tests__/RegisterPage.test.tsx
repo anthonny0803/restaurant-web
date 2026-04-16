@@ -41,6 +41,7 @@ describe("RegisterPage", () => {
 
     expect(screen.getByLabelText("Nombre")).toBeInTheDocument();
     expect(screen.getByLabelText("Correo electronico")).toBeInTheDocument();
+    expect(screen.getByLabelText("Confirmar correo electronico")).toBeInTheDocument();
     expect(screen.getByLabelText("Telefono")).toBeInTheDocument();
     expect(screen.getByLabelText("Contrasena")).toBeInTheDocument();
     expect(screen.getByLabelText("Confirmar contrasena")).toBeInTheDocument();
@@ -59,6 +60,10 @@ describe("RegisterPage", () => {
       screen.getByLabelText("Correo electronico"),
       "juan@email.com",
     );
+    await user.type(
+      screen.getByLabelText("Confirmar correo electronico"),
+      "juan@email.com",
+    );
     await user.type(screen.getByLabelText("Telefono"), "1234567890");
     await user.type(screen.getByLabelText("Contrasena"), "password123");
     await user.type(
@@ -71,6 +76,7 @@ describe("RegisterPage", () => {
       expect(mockRegister).toHaveBeenCalledWith({
         name: "Juan Perez",
         email: "juan@email.com",
+        email_confirmation: "juan@email.com",
         phone: "1234567890",
         password: "password123",
         password_confirmation: "password123",

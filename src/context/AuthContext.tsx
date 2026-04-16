@@ -39,12 +39,14 @@ interface AuthContextValue {
   register: (body: {
     name: string;
     email: string;
+    email_confirmation: string;
     phone: string;
     password: string;
     password_confirmation: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
   setSession: (user: User, token: string) => void;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -72,10 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [saveSession],
   );
 
+  const updateUser = useCallback((user: User) => {
+    setStoredUser(user);
+    setUser(user);
+  }, []);
+
   const register = useCallback(
     async (body: {
       name: string;
       email: string;
+      email_confirmation: string;
       phone: string;
       password: string;
       password_confirmation: string;
@@ -102,8 +110,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       setSession: saveSession,
+      updateUser,
     }),
-    [user, login, register, logout, saveSession],
+    [user, login, register, logout, saveSession, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

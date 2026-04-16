@@ -5,31 +5,15 @@ import FormField from "../components/FormField";
 import SubmitButton from "../components/SubmitButton";
 import { useAuth } from "../context/AuthContext";
 import { handleApiError } from "../lib/form-errors";
-import type { PublicSettings, Reservation, Table } from "../types/api";
+import type { Reservation, Table, TimeSlot } from "../types/api";
 import * as reservationService from "../services/reservation.service";
 import * as guestService from "../services/guest.service";
-import * as settingsService from "../services/settings.service";
 
 function formatDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function generateTimeSlots(opening: string, closing: string, intervalMinutes: number): string[] {
-  const [openH, openM] = opening.split(":").map(Number);
-  const [closeH, closeM] = closing.split(":").map(Number);
-  const startMinutes = openH * 60 + openM;
-  const endMinutes = closeH * 60 + closeM;
-
-  const slots: string[] = [];
-  for (let m = startMinutes; m <= endMinutes; m += intervalMinutes) {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    slots.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
-  }
-  return slots;
 }
 
 interface GuestForm {
@@ -59,57 +43,34 @@ export default function NewReservationPage() {
   const minDateStr = formatDate(today);
   const maxDateStr = formatDate(maxDate);
 
-  const [settings, setSettings] = useState<PublicSettings | null>(null);
-  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
-  const [settingsError, setSettingsError] = useState("");
-
-  useEffect(() => {
-    settingsService
-      .getPublicSettings()
-      .then((response) => setSettings(response.data))
-      .catch((err: unknown) => {
-        const message =
-          err instanceof Error ? err.message : "Error al cargar la configuracion";
-        setSettingsError(message);
-      })
-      .finally(() => setIsSettingsLoading(false));
-  }, []);
-
   const [step, setStep] = useState(1);
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
-
-  const timeSlots = settings
-    ? generateTimeSlots(
-        settings.opening_time,
-        settings.closing_time,
-        Number(settings.time_slot_interval_minutes),
-      )
-    : [];
-
-  const isToday = date === minDateStr;
-  const availableSlots = isToday
-    ? timeSlots.filter((slot) => {
-        const now = new Date();
-        const [h, m] = slot.split(":").map(Number);
-        return h > now.getHours() || (h === now.getHours() && m > now.getMinutes());
-      })
-    : timeSlots;
-
-  const handleDateChange = (newDate: string) => {
-    setDate(newDate);
-    if (newDate === minDateStr) {
-      const now = new Date();
-      const isSlotPast = (slot: string) => {
-        const [h, m] = slot.split(":").map(Number);
-        return h < now.getHours() || (h === now.getHours() && m <= now.getMinutes());
-      };
-      if (startTime && isSlotPast(startTime)) {
-        setStartTime("");
-      }
-    }
-  };
   const [seatsRequested, setSeatsRequested] = useState("");
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [isSlotsLoading, setIsSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState("");
+
+  useEffect(() => {
+    if (!date || !seatsRequested) {
+      setTimeSlots([]);
+      return;
+    }
+
+    setIsSlotsLoading(true);
+    setSlotsError("");
+    setStartTime("");
+
+    reservationService
+      .getTimeSlots(date, Number(seatsRequested))
+      .then((response) => setTimeSlots(response.data))
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error ? err.message : "Error al cargar horarios";
+        setSlotsError(message);
+      })
+      .finally(() => setIsSlotsLoading(false));
+  }, [date, seatsRequested]);
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -267,27 +228,19 @@ export default function NewReservationPage() {
         })}
       </div>
 
-      {isSettingsLoading && (
-        <div className="mt-6 space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-10 animate-pulse rounded-sm bg-zinc-700" />
-          ))}
-        </div>
-      )}
-
-      {settingsError && (
-        <p className="mt-4 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
-          {settingsError}
-        </p>
-      )}
-
       {error && (
         <p className="mt-4 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
           {error}
         </p>
       )}
 
-      {!isSettingsLoading && !settingsError && step === 1 && (
+      {slotsError && (
+        <p className="mt-4 rounded-sm bg-red-900/30 p-3 text-sm text-red-400">
+          {slotsError}
+        </p>
+      )}
+
+      {step === 1 && (
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -308,37 +261,11 @@ export default function NewReservationPage() {
               min={minDateStr}
               max={maxDateStr}
               value={date}
-              onChange={(e) => handleDateChange(e.target.value)}
+              onChange={(e) => setDate(e.target.value)}
               required
               className="rounded-sm border border-zinc-600 bg-zinc-700 px-3 py-2.5 text-sm text-white outline-none
                 transition-colors duration-200 focus:ring-1 focus:ring-amber-500"
             />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-zinc-400">Hora</span>
-            {!date ? (
-              <p className="text-sm text-zinc-500">Selecciona una fecha primero</p>
-            ) : availableSlots.length === 0 ? (
-              <p className="text-sm text-zinc-500">No hay horarios disponibles para esta fecha</p>
-            ) : (
-              <div className="grid grid-cols-4 gap-1.5">
-                {availableSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setStartTime(slot)}
-                    className={`cursor-pointer rounded-sm px-2 py-2 text-xs font-medium transition-all duration-200 ${
-                      startTime === slot
-                        ? "bg-amber-500 text-zinc-900 shadow-sm"
-                        : "border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -362,6 +289,46 @@ export default function NewReservationPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-zinc-400">Hora</span>
+            {!date || !seatsRequested ? (
+              <p className="text-sm text-zinc-500">Selecciona fecha y personas primero</p>
+            ) : isSlotsLoading ? (
+              <div className="grid grid-cols-4 gap-1.5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-9 animate-pulse rounded-sm bg-zinc-700" />
+                ))}
+              </div>
+            ) : timeSlots.length === 0 ? (
+              <p className="text-sm text-zinc-500">No hay horarios disponibles para esta fecha</p>
+            ) : (
+              <div className="grid grid-cols-4 gap-1.5">
+                {timeSlots.map((slot) => {
+                  const isBlocked = slot.status === "blocked";
+                  const isSelected = startTime === slot.start_time;
+
+                  return (
+                    <button
+                      key={slot.start_time}
+                      type="button"
+                      disabled={isBlocked}
+                      onClick={() => setStartTime(slot.start_time)}
+                      className={`rounded-sm px-2 py-2 text-xs font-medium transition-all duration-200 ${
+                        isBlocked
+                          ? "border border-zinc-800 bg-zinc-800 text-zinc-600 line-through cursor-not-allowed"
+                          : isSelected
+                            ? "cursor-pointer bg-amber-500 text-zinc-900 shadow-sm"
+                            : "cursor-pointer border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
+                      }`}
+                    >
+                      {slot.start_time}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <button

@@ -80,6 +80,14 @@ export interface PublicSettings {
   opening_time: string;
   closing_time: string;
   time_slot_interval_minutes: string;
+  default_reservation_duration_minutes: string;
+}
+
+export type TimeSlotStatus = "available" | "blocked";
+
+export interface TimeSlot {
+  start_time: string;
+  status: TimeSlotStatus;
 }
 
 // --- API response wrappers ---

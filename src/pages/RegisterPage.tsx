@@ -9,6 +9,7 @@ import { handleApiError } from "../lib/form-errors";
 interface RegisterForm {
   name: string;
   email: string;
+  email_confirmation: string;
   phone: string;
   password: string;
   password_confirmation: string;
@@ -17,6 +18,7 @@ interface RegisterForm {
 const FIELDS: (keyof RegisterForm)[] = [
   "name",
   "email",
+  "email_confirmation",
   "phone",
   "password",
   "password_confirmation",
@@ -54,6 +56,14 @@ export default function RegisterPage() {
         <FormField<RegisterForm>
           label="Correo electronico"
           name="email"
+          type="email"
+          register={register}
+          errors={errors}
+        />
+
+        <FormField<RegisterForm>
+          label="Confirmar correo electronico"
+          name="email_confirmation"
           type="email"
           register={register}
           errors={errors}

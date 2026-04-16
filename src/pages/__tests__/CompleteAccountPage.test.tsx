@@ -8,7 +8,7 @@ import { ApiValidationError } from "../../lib/api";
 vi.mock("../../services/auth.service");
 
 const mockNavigate = vi.fn();
-const mockSetSession = vi.fn();
+const mockUpdateUser = vi.fn();
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -22,7 +22,8 @@ vi.mock("../../context/AuthContext", () => ({
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
-    setSession: mockSetSession,
+    setSession: vi.fn(),
+    updateUser: mockUpdateUser,
   }),
 }));
 
@@ -49,12 +50,9 @@ describe("CompleteAccountPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("submits successfully, calls setSession and navigates to /my-reservations", async () => {
+  it("submits successfully, calls updateUser and navigates to /my-reservations", async () => {
     vi.mocked(authService.completeAccount).mockResolvedValue({
-      data: {
-        user: { id: 1, name: "Guest", email: "guest@test.com", role: "client" },
-        token: "new-token-123",
-      },
+      data: { id: 1, name: "Guest", email: "guest@test.com", phone: "612345678", role: "client", is_guest: false },
     });
     renderPage();
     const user = userEvent.setup();
@@ -73,9 +71,8 @@ describe("CompleteAccountPage", () => {
         password: "mypassword",
         password_confirmation: "mypassword",
       });
-      expect(mockSetSession).toHaveBeenCalledWith(
-        { id: 1, name: "Guest", email: "guest@test.com", role: "client" },
-        "new-token-123",
+      expect(mockUpdateUser).toHaveBeenCalledWith(
+        { id: 1, name: "Guest", email: "guest@test.com", phone: "612345678", role: "client", is_guest: false },
       );
       expect(mockNavigate).toHaveBeenCalledWith("/my-reservations");
     });

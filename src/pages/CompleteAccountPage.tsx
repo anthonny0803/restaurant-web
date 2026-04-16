@@ -19,7 +19,7 @@ const FIELDS: (keyof CompleteAccountForm)[] = [
 
 export default function CompleteAccountPage() {
   const navigate = useNavigate();
-  const { setSession } = useAuth();
+  const { updateUser } = useAuth();
 
   const {
     register,
@@ -31,8 +31,7 @@ export default function CompleteAccountPage() {
   const onSubmit = async (data: CompleteAccountForm) => {
     try {
       const response = await authService.completeAccount(data);
-      const { user, token } = response.data;
-      setSession(user, token);
+      updateUser(response.data);
       navigate("/my-reservations");
     } catch (error) {
       handleApiError<CompleteAccountForm>(error, setError, FIELDS);

@@ -3,11 +3,13 @@ import type {
   ApiResponse,
   AuthResponse,
   MessageResponse,
+  User,
 } from "../types/api";
 
 interface RegisterBody {
   name: string;
   email: string;
+  email_confirmation: string;
   phone: string;
   password: string;
   password_confirmation: string;
@@ -65,7 +67,7 @@ export function resetPassword(body: ResetPasswordBody) {
 }
 
 export function completeAccount(body: CompleteAccountBody) {
-  return apiFetch<ApiResponse<AuthResponse>>("/auth/complete-account", {
+  return apiFetch<ApiResponse<User>>("/auth/complete-account", {
     method: "POST",
     body,
   });

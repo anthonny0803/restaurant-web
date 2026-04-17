@@ -39,6 +39,7 @@ export interface MenuItem {
   price: string;
   category: MenuCategory;
   is_available: boolean;
+  is_featured: boolean;
   daily_stock: number | null;
   created_at: string;
 }

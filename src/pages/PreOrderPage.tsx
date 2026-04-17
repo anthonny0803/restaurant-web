@@ -90,7 +90,7 @@ export default function PreOrderPage() {
 
     const category = activeCategory ?? undefined;
     menuService
-      .getMenuItems(category)
+      .getMenuItems({ category })
       .then((response) => setMenuItems(response.data))
       .catch((err: unknown) => {
         const message =

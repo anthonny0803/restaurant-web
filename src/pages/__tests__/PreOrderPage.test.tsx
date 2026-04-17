@@ -209,7 +209,7 @@ describe("PreOrderPage", () => {
     await user.click(screen.getByRole("button", { name: "Entrantes" }));
 
     await waitFor(() => {
-      expect(menuService.getMenuItems).toHaveBeenCalledWith("entrantes");
+      expect(menuService.getMenuItems).toHaveBeenCalledWith({ category: "entrantes" });
     });
   });
 

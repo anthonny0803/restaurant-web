@@ -119,11 +119,11 @@ describe("MenuPage", () => {
     await user.click(screen.getByRole("button", { name: "Entrantes" }));
 
     await waitFor(() => {
-      expect(menuService.getMenuItems).toHaveBeenLastCalledWith("entrantes");
+      expect(menuService.getMenuItems).toHaveBeenLastCalledWith({ category: "entrantes" });
     });
   });
 
-  it("shows all items when Todos tab is clicked after filtering", async () => {
+  it("refetches featured items when Destacados tab is clicked after filtering", async () => {
     mockGetMenuItems();
     render(<MenuPage />);
     const user = userEvent.setup();
@@ -136,14 +136,14 @@ describe("MenuPage", () => {
     await user.click(screen.getByRole("button", { name: "Entrantes" }));
 
     await waitFor(() => {
-      expect(menuService.getMenuItems).toHaveBeenLastCalledWith("entrantes");
+      expect(menuService.getMenuItems).toHaveBeenLastCalledWith({ category: "entrantes" });
     });
 
     mockGetMenuItems();
     await user.click(screen.getByRole("button", { name: "Destacados" }));
 
     await waitFor(() => {
-      expect(menuService.getMenuItems).toHaveBeenLastCalledWith(undefined);
+      expect(menuService.getMenuItems).toHaveBeenLastCalledWith({ featured: true });
     });
   });
 

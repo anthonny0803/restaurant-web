@@ -11,8 +11,6 @@ const CATEGORIES: { value: MenuCategory; label: string }[] = [
   { value: "bebidas", label: "Bebidas" },
 ];
 
-const FEATURED_COUNT = 2;
-
 export default function MenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<MenuCategory | null>(
@@ -22,13 +20,16 @@ export default function MenuPage() {
   const [error, setError] = useState("");
   const toast = useToast();
 
+  const isFeatured = !activeCategory;
+
   useEffect(() => {
     setIsLoading(true);
     setError("");
 
-    const category = activeCategory ?? undefined;
     menuService
-      .getMenuItems(category)
+      .getMenuItems(
+        isFeatured ? { featured: true } : { category: activeCategory! },
+      )
       .then((response) => setItems(response.data))
       .catch((err: unknown) => {
         const message =
@@ -37,7 +38,7 @@ export default function MenuPage() {
         toast.error(message);
       })
       .finally(() => setIsLoading(false));
-  }, [activeCategory]);
+  }, [activeCategory, isFeatured]);
 
   const groupedItems = activeCategory
     ? { [activeCategory]: items }
@@ -47,8 +48,6 @@ export default function MenuPage() {
         acc[item.category] = group;
         return acc;
       }, {});
-
-  const isFeatured = !activeCategory;
 
   function renderMenuItem(item: MenuItem) {
     return (
@@ -138,10 +137,6 @@ export default function MenuPage() {
           <div className="space-y-12">
             {CATEGORIES.filter((cat) => groupedItems[cat.value]).map((cat) => {
               const categoryItems = groupedItems[cat.value];
-              const visibleItems = isFeatured
-                ? categoryItems.slice(0, FEATURED_COUNT)
-                : categoryItems;
-              const hasMore = isFeatured && categoryItems.length > FEATURED_COUNT;
 
               return (
                 <section key={cat.value}>
@@ -154,10 +149,10 @@ export default function MenuPage() {
                   </div>
 
                   <div className="mt-5 space-y-1">
-                    {visibleItems.map(renderMenuItem)}
+                    {categoryItems.map(renderMenuItem)}
                   </div>
 
-                  {hasMore && (
+                  {isFeatured && (
                     <button
                       type="button"
                       onClick={() => setActiveCategory(cat.value)}

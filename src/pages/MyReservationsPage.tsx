@@ -191,7 +191,7 @@ export default function MyReservationsPage() {
               <button
                 type="button"
                 onClick={() => toggleAccordion(reservation.id)}
-                className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors duration-200 hover:bg-zinc-800"
+                className="flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left transition-colors duration-200 hover:bg-zinc-800"
                 aria-expanded={isExpanded}
               >
                 <div className="flex items-center gap-4">
@@ -287,7 +287,7 @@ export default function MyReservationsPage() {
                           <button
                             type="button"
                             onClick={() => setCancellingId(detail.id)}
-                            className="rounded-sm border border-red-800 px-4 py-2 text-sm font-medium text-red-400 transition-colors duration-200 hover:bg-red-900/30"
+                            className="cursor-pointer rounded-sm border border-red-800 px-4 py-2 text-sm font-medium text-red-400 transition-colors duration-200 hover:bg-red-900/30"
                           >
                             Cancelar
                           </button>

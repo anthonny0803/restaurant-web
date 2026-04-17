@@ -4,6 +4,7 @@ import type {
   PaginatedResponse,
   Reservation,
   Table,
+  TimeSlot,
 } from "../types/api";
 
 interface HoldReservationBody {
@@ -22,6 +23,16 @@ interface AvailableTablesParams {
   date: string;
   start_time: string;
   seats_requested: number;
+}
+
+export function getTimeSlots(date: string, seatsRequested: number) {
+  const query = new URLSearchParams({
+    date,
+    seats_requested: String(seatsRequested),
+  });
+  return apiFetch<ApiResponse<TimeSlot[]>>(
+    `/reservations/time-slots?${query}`,
+  );
 }
 
 export function getAvailableTables(params: AvailableTablesParams) {

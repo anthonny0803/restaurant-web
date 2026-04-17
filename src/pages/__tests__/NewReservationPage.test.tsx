@@ -1,16 +1,14 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import NewReservationPage from "../NewReservationPage";
 import * as reservationService from "../../services/reservation.service";
 import * as guestService from "../../services/guest.service";
-import * as settingsService from "../../services/settings.service";
 import { ApiValidationError } from "../../lib/api";
-import type { Table } from "../../types/api";
+import type { Table, TimeSlot } from "../../types/api";
 
 vi.mock("../../services/reservation.service");
 vi.mock("../../services/guest.service");
-vi.mock("../../services/settings.service");
 
 const mockNavigate = vi.fn();
 
@@ -31,6 +29,15 @@ vi.mock("../../context/AuthContext", () => ({
     setSession: vi.fn(),
   }),
 }));
+
+const MOCK_TIME_SLOTS: TimeSlot[] = [
+  { start_time: "13:00", status: "blocked" },
+  { start_time: "13:30", status: "available" },
+  { start_time: "14:00", status: "available" },
+  { start_time: "14:30", status: "blocked" },
+  { start_time: "15:00", status: "available" },
+  { start_time: "19:00", status: "available" },
+];
 
 const MOCK_TABLES: Table[] = [
   {
@@ -54,6 +61,12 @@ const MOCK_TABLES: Table[] = [
     created_at: "2026-01-01",
   },
 ];
+
+function mockTimeSlots(slots: TimeSlot[] = MOCK_TIME_SLOTS) {
+  vi.mocked(reservationService.getTimeSlots).mockResolvedValue({
+    data: slots,
+  });
+}
 
 function mockAvailableTables(tables: Table[] = MOCK_TABLES) {
   vi.mocked(reservationService.getAvailableTables).mockResolvedValue({
@@ -99,36 +112,6 @@ function mockCreateGuestReservation() {
   });
 }
 
-function mockGetPublicSettings() {
-  vi.mocked(settingsService.getPublicSettings).mockResolvedValue({
-    data: {
-      opening_time: "13:00",
-      closing_time: "23:00",
-      time_slot_interval_minutes: "30",
-    },
-  });
-}
-
-async function renderPage() {
-  render(
-    <MemoryRouter>
-      <NewReservationPage />
-    </MemoryRouter>,
-  );
-  await waitFor(() => {
-    expect(screen.getByLabelText("Fecha")).toBeInTheDocument();
-  });
-}
-
-async function fillSearchAndSubmit(user: ReturnType<typeof userEvent.setup>) {
-  fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: TEST_DATE } });
-  await user.click(screen.getByRole("button", { name: "19:00" }));
-  await user.click(screen.getByRole("button", { name: "3-4" }));
-  await user.click(
-    screen.getByRole("button", { name: "Buscar mesas disponibles" }),
-  );
-}
-
 function futureDate(): string {
   const d = new Date();
   d.setDate(d.getDate() + 2);
@@ -140,36 +123,118 @@ function futureDate(): string {
 
 const TEST_DATE = futureDate();
 
+function renderPage() {
+  render(
+    <MemoryRouter>
+      <NewReservationPage />
+    </MemoryRouter>,
+  );
+}
+
+async function selectDateAndSeats(user: ReturnType<typeof userEvent.setup>) {
+  fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: TEST_DATE } });
+  await user.click(screen.getByRole("button", { name: "3-4" }));
+  await waitFor(() => {
+    expect(reservationService.getTimeSlots).toHaveBeenCalledWith(
+      TEST_DATE,
+      4,
+    );
+  });
+}
+
+async function fillSearchAndSubmit(user: ReturnType<typeof userEvent.setup>) {
+  await selectDateAndSeats(user);
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "19:00" })).toBeEnabled();
+  });
+  await user.click(screen.getByRole("button", { name: "19:00" }));
+  await user.click(
+    screen.getByRole("button", { name: "Buscar mesas disponibles" }),
+  );
+}
+
 describe("NewReservationPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsAuthenticated = false;
-    mockGetPublicSettings();
+    mockTimeSlots();
   });
 
   describe("Step 1 - Search", () => {
-    it("renders search form with date, time, and seats fields", async () => {
-      await renderPage();
+    it("renders search form with date, seats, and time fields", () => {
+      renderPage();
 
       expect(screen.getByLabelText("Fecha")).toBeInTheDocument();
-      expect(screen.getByText("Hora")).toBeInTheDocument();
       expect(screen.getByText("Personas")).toBeInTheDocument();
+      expect(screen.getByText("Hora")).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Buscar mesas disponibles" }),
       ).toBeInTheDocument();
     });
 
-    it("renders step indicators", async () => {
-      await renderPage();
+    it("renders step indicators", () => {
+      renderPage();
 
       expect(screen.getByText("Buscar")).toBeInTheDocument();
       expect(screen.getByText("Elegir mesa")).toBeInTheDocument();
       expect(screen.getByText("Confirmar")).toBeInTheDocument();
     });
 
+    it("shows placeholder until date and seats are selected", () => {
+      renderPage();
+
+      expect(
+        screen.getByText("Selecciona fecha y personas primero"),
+      ).toBeInTheDocument();
+    });
+
+    it("fetches time slots when date and seats are selected", async () => {
+      renderPage();
+      const user = userEvent.setup();
+
+      await selectDateAndSeats(user);
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "19:00" })).toBeEnabled();
+      });
+    });
+
+    it("renders blocked slots as disabled", async () => {
+      renderPage();
+      const user = userEvent.setup();
+
+      await selectDateAndSeats(user);
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "13:00" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "14:30" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "13:30" })).toBeEnabled();
+      });
+    });
+
+    it("shows loading skeletons while fetching slots", async () => {
+      let resolveSlots!: (value: { data: TimeSlot[] }) => void;
+      vi.mocked(reservationService.getTimeSlots).mockReturnValue(
+        new Promise((resolve) => { resolveSlots = resolve; }),
+      );
+      renderPage();
+      const user = userEvent.setup();
+
+      fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: TEST_DATE } });
+      await user.click(screen.getByRole("button", { name: "3-4" }));
+
+      await waitFor(() => {
+        expect(document.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
+      });
+
+      await act(async () => {
+        resolveSlots({ data: MOCK_TIME_SLOTS });
+      });
+    });
+
     it("calls getAvailableTables and moves to step 2", async () => {
       mockAvailableTables();
-      await renderPage();
+      renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -190,7 +255,7 @@ describe("NewReservationPage", () => {
 
     it("shows error when no tables are available", async () => {
       mockAvailableTables([]);
-      await renderPage();
+      renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -204,11 +269,11 @@ describe("NewReservationPage", () => {
       });
     });
 
-    it("shows error when API call fails", async () => {
+    it("shows error when getAvailableTables fails", async () => {
       vi.mocked(reservationService.getAvailableTables).mockRejectedValue(
         new Error("Error del servidor"),
       );
-      await renderPage();
+      renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -217,12 +282,53 @@ describe("NewReservationPage", () => {
         expect(screen.getByText("Error del servidor")).toBeInTheDocument();
       });
     });
+
+    it("shows error when getTimeSlots fails", async () => {
+      vi.mocked(reservationService.getTimeSlots).mockRejectedValue(
+        new Error("Error al cargar horarios"),
+      );
+      renderPage();
+      const user = userEvent.setup();
+
+      fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: TEST_DATE } });
+      await user.click(screen.getByRole("button", { name: "3-4" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Error al cargar horarios"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("resets selected time when date changes", async () => {
+      mockAvailableTables();
+      renderPage();
+      const user = userEvent.setup();
+
+      await selectDateAndSeats(user);
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "19:00" })).toBeEnabled();
+      });
+      await user.click(screen.getByRole("button", { name: "19:00" }));
+
+      const newDate = new Date();
+      newDate.setDate(newDate.getDate() + 3);
+      const newDateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, "0")}-${String(newDate.getDate()).padStart(2, "0")}`;
+      fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: newDateStr } });
+
+      await waitFor(() => {
+        expect(reservationService.getTimeSlots).toHaveBeenCalledWith(
+          newDateStr,
+          4,
+        );
+      });
+    });
   });
 
   describe("Step 2 - Table selection", () => {
     async function goToStep2() {
       mockAvailableTables();
-      await renderPage();
+      renderPage();
       const user = userEvent.setup();
       await fillSearchAndSubmit(user);
       await waitFor(() => {
@@ -272,7 +378,7 @@ describe("NewReservationPage", () => {
     async function goToStep3Registered() {
       mockIsAuthenticated = true;
       mockAvailableTables();
-      await renderPage();
+      renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);
@@ -339,7 +445,7 @@ describe("NewReservationPage", () => {
     async function goToStep3Guest() {
       mockIsAuthenticated = false;
       mockAvailableTables();
-      await renderPage();
+      renderPage();
       const user = userEvent.setup();
 
       await fillSearchAndSubmit(user);

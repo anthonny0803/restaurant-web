@@ -48,7 +48,7 @@ export default function CancelModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-sm border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-400 hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-sm border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-400 transition-colors duration-200 hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             Volver
           </button>
@@ -56,7 +56,7 @@ export default function CancelModal({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="rounded-sm bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-sm bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Cancelando..." : "Cancelar reservacion"}
           </button>

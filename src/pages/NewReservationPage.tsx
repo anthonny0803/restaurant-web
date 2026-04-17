@@ -86,7 +86,6 @@ export default function NewReservationPage() {
 
   const searchTables = async () => {
     if (!date || !startTime || !seatsRequested) {
-      setError("Completa todos los campos para buscar mesas.");
       return;
     }
 
@@ -333,8 +332,8 @@ export default function NewReservationPage() {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+            disabled={isLoading || !date || !startTime || !seatsRequested}
+            className="cursor-pointer rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
               transition-colors duration-200 hover:bg-amber-600
               disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -357,7 +356,7 @@ export default function NewReservationPage() {
                 key={table.id}
                 type="button"
                 onClick={() => setSelectedTable(table)}
-                className={`rounded-sm border p-5 text-left transition-all duration-200 ${
+                className={`cursor-pointer rounded-sm border p-5 text-left transition-all duration-200 ${
                   selectedTable?.id === table.id
                     ? "border-amber-500 bg-amber-500/10 text-white"
                     : "border-zinc-700 text-zinc-200 hover:border-zinc-500"
@@ -381,7 +380,7 @@ export default function NewReservationPage() {
                 setSelectedTable(null);
                 setError("");
               }}
-              className="rounded-sm border border-zinc-700 px-4 py-2.5 text-sm
+              className="cursor-pointer rounded-sm border border-zinc-700 px-4 py-2.5 text-sm
                 font-medium text-zinc-400 transition-colors duration-200 hover:border-zinc-500 hover:text-white"
             >
               Volver
@@ -390,7 +389,7 @@ export default function NewReservationPage() {
               type="button"
               onClick={() => setStep(3)}
               disabled={!selectedTable}
-              className="rounded-sm bg-amber-500 px-4 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+              className="cursor-pointer rounded-sm bg-amber-500 px-4 py-2.5 text-sm font-medium tracking-wide text-zinc-900
                 transition-colors duration-200 hover:bg-amber-400
                 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -431,7 +430,7 @@ export default function NewReservationPage() {
               type="button"
               onClick={createRegisteredHold}
               disabled={isHoldSubmitting}
-              className="mt-6 w-full rounded-sm bg-amber-500 py-2.5 text-sm font-medium
+              className="mt-6 w-full cursor-pointer rounded-sm bg-amber-500 py-2.5 text-sm font-medium
                 tracking-wide text-zinc-900 transition-colors duration-200 hover:bg-amber-600
                 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -489,7 +488,7 @@ export default function NewReservationPage() {
               setStep(2);
               setError("");
             }}
-            className="mt-3 w-full rounded-sm border border-zinc-700 py-2.5 text-sm
+            className="mt-3 w-full cursor-pointer rounded-sm border border-zinc-700 py-2.5 text-sm
               font-medium text-zinc-400 transition-colors duration-200 hover:border-zinc-500 hover:text-white"
           >
             Volver

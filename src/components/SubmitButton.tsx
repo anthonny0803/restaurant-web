@@ -13,7 +13,7 @@ export default function SubmitButton({
     <button
       type="submit"
       disabled={isSubmitting}
-      className="rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+      className="cursor-pointer rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
         transition-colors duration-200 hover:bg-amber-600
         disabled:cursor-not-allowed disabled:opacity-50"
     >

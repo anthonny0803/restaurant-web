@@ -152,7 +152,7 @@ function CheckoutForm({ reservation }: CheckoutFormProps) {
         <button
           type="submit"
           disabled={isProcessing || !stripe || !elements}
-          className="rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
+          className="cursor-pointer rounded-sm bg-amber-500 py-2.5 text-sm font-medium tracking-wide text-zinc-900
             transition-colors duration-200 hover:bg-amber-400
             disabled:cursor-not-allowed disabled:opacity-50"
         >

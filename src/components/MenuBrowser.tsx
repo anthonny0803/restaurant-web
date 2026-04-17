@@ -57,7 +57,7 @@ function MenuItemCard({
           type="button"
           onClick={() => onAddItem(item.id, quantity)}
           disabled={!item.is_available || isAdding}
-          className="rounded-sm bg-amber-500 px-3 py-1 text-sm font-medium text-zinc-900 transition-colors duration-200 hover:bg-amber-400 disabled:opacity-50"
+          className="cursor-pointer rounded-sm bg-amber-500 px-3 py-1 text-sm font-medium text-zinc-900 transition-colors duration-200 hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isAdding ? "Agregando..." : "Agregar"}
         </button>

@@ -215,7 +215,7 @@ export default function PreOrderPage() {
           <button
             type="button"
             onClick={() => setOrderError("")}
-            className="text-sm font-medium text-red-400 hover:text-red-300"
+            className="cursor-pointer text-sm font-medium text-red-400 transition-colors duration-200 hover:text-red-300"
           >
             Cerrar
           </button>
